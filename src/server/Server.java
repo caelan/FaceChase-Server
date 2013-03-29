@@ -50,6 +50,7 @@ public class Server {
             out.println("Welcome to Minesweeper. " + connected + " people are playing including you. Type 'help' for help.\n");
             for (String line =in.readLine(); line!=null; line=in.readLine()) {
                 String output = parseRequest(line);
+                //Do stuff to it
             }
         } finally {        
             out.close();
@@ -97,8 +98,8 @@ public class Server {
         int port = 4444;
         try
         {
-            Server ser = new Server(port);
-            ser.serve();
+            Server server = new Server(port);
+            server.serve();
         }
         catch(Exception e){
             

@@ -66,16 +66,13 @@ public class FacialDetection
         {
             CvRect rect = new CvRect(cvGetSeqElem(faces, 0)); 
             
-            cvSetImageROI(prImg, rect);
-            IplImage cropped = cvCreateImage(cvGetSize(prImg), IPL_DEPTH_8U, 1);
-            cvCopy(prImg, cropped, null);
-            cvResetImageROI(prImg);
-                     
-            IplImage equImg = IplImage.create(cropped.width(), cropped.height(), IPL_DEPTH_8U, 1); 
-            cvEqualizeHist(cropped, equImg); 
-            
+            cvSetImageROI(img, rect);
+            IplImage cropped = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
+            cvCopy(img, cropped, null);
+            cvResetImageROI(img);
+                       
             cvClearMemStorage(storage); 
-            return equImg; 
+            return cropped; 
         }    
     }
 

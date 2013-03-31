@@ -2,61 +2,33 @@ package facialRecognition;
 
 import static com.googlecode.javacv.cpp.opencv_highgui.*;
 import static com.googlecode.javacv.cpp.opencv_core.*;
+import static com.googlecode.javacv.cpp.opencv_imgproc.*;
 import static com.googlecode.javacv.cpp.opencv_contrib.*;
-
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Random;
-import java.util.Scanner;
-
-import com.googlecode.javacv.cpp.opencv_core.IplImage;
 
 /*
- * TODO
+ * TODO - save/load algorithm
+ * Facial Detection
  * Retinex Algorithm to preprocess
- * Shuffle inputs
  * Add faces to library
  * @author Caelan Garrett
  */
 
-public class FacialRecognition 
+public class FacialRecognitionOld
 {
-    private final String learningData = "facialRecognition.dat";
-    private final String helperData = "helperData.dat";
     public FaceRecognizer classifier;
     public HashSet<Integer> ids;
-    public FacialDetection detect;
-    public int size;
-    private int algorithm;
     
     /**
      * 
      * @param type determines the type of classifier - 0 is FisherFace, 1 is LBPHFace, and default is EigenFace
      */
-    public FacialRecognition(boolean loadLast, String directory, int type, int s)
+    public FacialRecognitionOld(String directory, int type)
     {
-        File loadFile1 = new File(System.getProperty("user.dir") + "\\" + learningData);      
-        File loadFile2 = new File(System.getProperty("user.dir") + "\\" + helperData);         
-
-        if(loadLast && loadFile1.exists() && loadFile2.exists())
-        {
-            System.out.println("Loading Data");
-            if(load())
-                return;
-                
-        }
-        System.out.println("Training Data");
-        train(directory, type, s);
-    }
-        
-    public void train(String directory, int type, int s)
-    {
-        detect = new FacialDetection();
-        size = s;
         ids = new HashSet<Integer>();
         long startTime = System.nanoTime();
         File root = new File(directory);
@@ -101,25 +73,25 @@ public class FacialRecognition
         int[] labels = new int[faceFileList.size()];
 
         IplImage img;
+        IplImage grayImg;
         for (int i = 0; i < faceFileList.size(); i++) {
-            img = extractFace(cvLoadImage(faceFileList.get(i).getAbsolutePath()));
+            img = cvLoadImage(faceFileList.get(i).getAbsolutePath());
             labels[i] = labelList.get(i);
-            
-            faces.put(i, img);
+            grayImg = IplImage.create(img.width(), img.height(), IPL_DEPTH_8U, 1);
+            cvCvtColor(img, grayImg, CV_BGR2GRAY);
+            cvEqualizeHist(grayImg, grayImg);
+            faces.put(i, grayImg);
         }
 
         switch(type){
         case 0:
                 classifier = createFisherFaceRecognizer();
-                algorithm = 0;
                 break;
         case 1:
                 classifier = createLBPHFaceRecognizer();
-                algorithm = 1;
                 break;
         default:
                 classifier = createEigenFaceRecognizer();
-                algorithm = 2;
                 break;
         }
         
@@ -131,89 +103,19 @@ public class FacialRecognition
         long trainTime = System.nanoTime();
         System.out.println("Train Time: " + (trainTime - loadTime)/1000000000.0 + " seconds");
         
-        save();      
-    }
-    
-    public IplImage extractFace(IplImage img)
-    {
-        IplImage face = detect.findFace(img);
-        if(face == null)
-        {
-            return detect.preprocess(img, size, size);
-        }
-        else
-        {
-            return detect.preprocess(face, size, size);
-        }
     }
     
     public int predict(IplImage img)
     {
-        return classifier.predict(extractFace(img));
-    }
-    
-    public boolean save()
-    {
-        long startTime = System.nanoTime();                
-        
-        try{
-            classifier.save(learningData);
-            
-            FileWriter fstream = new FileWriter(helperData);
-            BufferedWriter out = new BufferedWriter(fstream);
-            out.write("" + algorithm +"\n");
-            out.write("" + size +"\n");
-            for(int elem: ids)
-                out.write("" + elem +"\n");
-
-            out.close();
-        }
-        catch (Exception e)
-        {
-            System.err.println("Could not save classifier: " + e.getMessage());
-            return false;
-        }
-        
-        long saveTime = System.nanoTime();
-        System.out.println("Save Time: " + (saveTime - startTime)/1000000000.0 + " seconds");
-        return true;
-    }
-    
-    public boolean load()
-    {
-        long startTime = System.nanoTime();
-        
-        try 
-        {
-            detect = new FacialDetection();
-            ids = new HashSet<Integer>();
-            
-            Scanner scanner =  new Scanner(new File(helperData));
-            algorithm = Integer.parseInt(scanner.nextLine());
-            size = Integer.parseInt(scanner.nextLine());
-           
-            while (scanner.hasNextLine())
-            {
-                ids.add(Integer.parseInt(scanner.nextLine()));
-            }
-            
-            classifier = createEigenFaceRecognizer();
-            classifier.load(learningData);
-        }
-        catch (Exception e)
-        {
-            System.err.println("Could not load classifier: " + e.getMessage());
-            return false;
-        }        
-     
-        long loadTime = System.nanoTime();
-        System.out.println("Load Time: " + (loadTime - startTime)/1000000000.0 + " seconds");
-        return true;
+        IplImage grayImg = IplImage.create(img.width(), img.height(), IPL_DEPTH_8U, 1);
+        cvCvtColor(img, grayImg, CV_BGR2GRAY);
+        cvEqualizeHist(grayImg, grayImg);
+        return classifier.predict(grayImg);
     }
         
     public static void main(String[] args) {
         String directory = System.getProperty("user.dir") + "\\TestFaces";
-        FacialRecognition facialRec = new FacialRecognition(true, directory, 2, 100);
+        FacialRecognitionOld facialRec = new FacialRecognitionOld(directory, 2);
 
         Random rand = new Random();
         int selectedID = (Integer)facialRec.ids.toArray()[rand.nextInt(facialRec.ids.size())];

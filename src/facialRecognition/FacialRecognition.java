@@ -13,11 +13,14 @@ import java.util.LinkedList;
 import java.util.Random;
 import java.util.Scanner;
 
+import util.Pair;
+
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
 
 /*
  * TODO
  * Retinex Algorithm to preprocess
+ * rotations
  * Shuffle inputs
  * Add faces to library
  * @author Caelan Garrett
@@ -134,6 +137,11 @@ public class FacialRecognition
         save();      
     }
     
+    public void update(MatVector faces, int[] labels)
+    {
+        classifier.update(faces, labels);  
+    }
+    
     public IplImage extractFace(IplImage img)
     {
         IplImage face = detect.findFace(img);
@@ -150,6 +158,14 @@ public class FacialRecognition
     public int predict(IplImage img)
     {
         return classifier.predict(extractFace(img));
+    }
+    
+    public Pair<Integer, Double> predictConfidence(IplImage img)
+    {
+        int[] predictedLabel = new int[1];
+        double[] confidence = new double[1];
+        classifier.predict(extractFace(img), predictedLabel, confidence);
+        return new Pair<Integer, Double>(predictedLabel[0], confidence[0]);
     }
     
     public boolean save()

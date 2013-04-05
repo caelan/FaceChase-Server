@@ -9,24 +9,25 @@ public class PlayerPool
 {
     private int nextID; //Synchronization
     private HashMap<Integer, Player> playerMap; //Concurrent vs Synchronized or use array
-    private File faceDirectory;
     private HashSet<String> usernames;
-    
-    public PlayerPool(File faceDirectory)
+    private String saveDir;
+
+    public PlayerPool(String refDir)
     {        
-        int nextID = 0;
+        nextID = 0;
         playerMap = new HashMap<Integer, Player>();
         usernames = new HashSet<String>();
-        this.faceDirectory = faceDirectory;
+        this.saveDir = refDir + "\\Players";
     }
     
-    public synchronized Integer addPlayer(String username, String name)
+    public synchronized Player addPlayer(String username, String name)
     {
         if(usernames.contains(username))
             return null;
-        playerMap.put(nextID, new Player(nextID, username, name));
+        Player p = new Player(nextID, username, name);
+        playerMap.put(nextID, p);
         usernames.add(username);
-        return nextID++;
+        return p;
     }
     
     public synchronized Player removePlayer(int id) //Synchronized
@@ -43,5 +44,10 @@ public class PlayerPool
             return playerMap.get(id);
         else
             return null;
+    }
+    
+    public synchronized boolean save() //TODO
+    {
+        return false;
     }
 }

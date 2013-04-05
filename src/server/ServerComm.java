@@ -52,7 +52,14 @@ public class ServerComm {
             for (String line =in.readLine(); line!=null; line=in.readLine()) {
                 String output = parseRequest(line);
                 if(output == null)
+                {
                     out.println("Invalid Request");
+                }
+                else if(output.equals("quit"))
+                {
+                    out.println("User Disconnected");
+                    break;
+                }
             }
         } finally {        
             out.close();
@@ -62,7 +69,7 @@ public class ServerComm {
 
     private String parseRequest(String input) 
     {
-        String regex = "(adduser .* [a-zA-Z ]+)|(kill \\d+ \\d+)"; 
+        String regex = "(adduser .* [a-zA-Z ]+)|(kill \\d+ \\d+)|(quit)"; 
         if(!input.matches(regex)) {
             return null;
         }
@@ -71,7 +78,8 @@ public class ServerComm {
         {
             String username = tokens[1];
             String name = tokens[2]; //Can have spaces...
-            return "User " + server.addPlayer(username, name) + "Added";
+            String message = server.addPlayer(username, name);
+            return message;
         } 
         else if (tokens[0].equals("kill")) 
         {
@@ -85,6 +93,10 @@ public class ServerComm {
             
             //Kill request
             return server.processKill(killerID, image);
+        } 
+        else if (tokens[0].equals("quit")) 
+        {
+            return "quit";
         } 
         else
         {

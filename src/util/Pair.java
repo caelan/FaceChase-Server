@@ -23,7 +23,7 @@ public class Pair<U, V> {
      * Package-protected access to a Pair's first object.
      * @return The pair's first object.
      */
-    protected U getFirst() {
+    public U getFirst() {
         return first;
     }
     
@@ -31,7 +31,7 @@ public class Pair<U, V> {
      * Package-protected access a Pair's second object.
      * @return The pair's second object.
      */
-    protected V getSecond() {
+    public V getSecond() {
         return second;
     }
 }

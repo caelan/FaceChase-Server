@@ -1,5 +1,7 @@
 package facialRecognition;
 
+import util.Constants;
+
 import com.googlecode.javacv.cpp.*;
 import com.googlecode.javacpp.Loader;
 
@@ -10,8 +12,16 @@ import static com.googlecode.javacv.cpp.opencv_objdetect.*;
 
 public class FacialDetection 
 {
-    private static final String CASCADE_FILE = "haarcascade_frontalface_alt.xml";
+    private final String CASCADE_FILE;
     public CvHaarClassifierCascade cascade;
+    
+    public FacialDetection()
+    {
+        CASCADE_FILE = Constants.facialDetectLoadFile;
+        Loader.load(opencv_objdetect.class); 
+        cascade = new CvHaarClassifierCascade(cvLoad(CASCADE_FILE)); 
+    }
+    
     public IplImage preprocess(IplImage img)
     {
         IplImage grayImg = IplImage.create(img.width(), img.height(), IPL_DEPTH_8U, 1); 
@@ -42,13 +52,6 @@ public class FacialDetection
         cvEqualizeHist(smallImg, equImg); 
         return equImg;
     }   
-
-
-    public FacialDetection()
-    {
-        Loader.load(opencv_objdetect.class); 
-        cascade = new CvHaarClassifierCascade(cvLoad(CASCADE_FILE)); 
-    }
     
     public IplImage findFace(IplImage img)
     {

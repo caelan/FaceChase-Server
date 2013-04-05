@@ -58,4 +58,9 @@ public class Player
     {
         return id;
     }
+    
+    public HashSet<Integer> getFriends()
+    {
+        return friends;
+    }
 }

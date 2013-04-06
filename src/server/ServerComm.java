@@ -69,12 +69,20 @@ public class ServerComm {
 
     private String parseRequest(String input) 
     {
-        String regex = "(adduser .* [a-zA-Z ]+)|(kill \\d+ \\d+)|(quit)"; 
+        String regex = "(login .+)|" +
+        		"(adduser .+ [a-zA-Z ]+)|" +
+        		"(kill \\d+ \\d+)|" +
+        		"(quit)"; 
         if(!input.matches(regex)) {
             return null;
         }
         String[] tokens = input.split(" ");
-        if (tokens[0].equals("adduser")) 
+        if (tokens[0].equals("login")) 
+        {
+            String username = tokens[1];
+            return "";
+        }         
+        else if (tokens[0].equals("adduser")) 
         {
             String username = tokens[1];
             String name = tokens[2]; //Can have spaces...
@@ -102,6 +110,9 @@ public class ServerComm {
         {
             return null;
         }
+    }
+    public void stop() throws IOException {
+        serverSocket.close();
     }
 }
 //Run "telnet localhost 4444" in the Command line

@@ -18,7 +18,7 @@ public class Server {
     private PlayerPool playerPool;
     private GamePool gamePool;
 
-    public Server(int port, String workDir) throws IOException {
+    public Server(int port, String workDir, boolean load) throws IOException {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                JPanel inputPanel = new JPanel();
@@ -42,12 +42,24 @@ public class Server {
                 if(i != 0) //TODO make the exiting more peaceful 
                 {
                     //User canceled/closed Dialog
+                    try{
+                    comm.stop();
+                    } catch (Exception e)
+                    {
+                        System.err.println("Could not close connections");
+                    }
                     System.out.println("Server Terminated Without Saving");
                     System.exit(0);
                 }
                 else
                 {
                     save();
+                    try{
+                    comm.stop();
+                    } catch (Exception e)
+                    {
+                        System.err.println("Could not close connections");
+                    }
                     System.out.println("Server Terminated After Saving");
                     System.exit(0);
                 }
@@ -59,8 +71,10 @@ public class Server {
         //Load/Save
         comm = new ServerComm(this, port);
         playerPool = new PlayerPool(workDir);
-        gamePool = new GamePool(workDir);
-        initializeOneFriendsGame();
+        gamePool = new GamePool(workDir, load);
+        
+        if(!load)
+            initializeOneFriendsGame();
         comm.serve();
     }
     
@@ -68,6 +82,13 @@ public class Server {
     {
         boolean b = playerPool.save();
         b = gamePool.save() && b;
+        return b;
+    }
+    
+    public boolean load()
+    {
+        boolean b = playerPool.load();
+        b = gamePool.load() && b;
         return b;
     }
     
@@ -143,13 +164,17 @@ public class Server {
                 options,  //the titles of buttons
                 options[0]); //default button title
         
+         boolean load = false;
          //i = 0 indicates New selected. i = -1 indicates closed window. i = 1 indicates Load selected.
-         if(i != 0)
+         if(i != 0 && i != 1)
          {
              System.out.println("User aborted server creation");
              System.exit(0);
          }
-         //TODO add the load
+         else if(i == 1)
+         {
+             load = true;
+         }
                   
          //Ensures that the port number is an integer. If not, sets to the default number of 4444
          int portNumber = 4444;
@@ -162,7 +187,7 @@ public class Server {
         try
         {
             String directory = System.getProperty("user.dir");
-            Server server = new Server(portNumber, directory);
+            Server server = new Server(portNumber, directory, load);
         }
         catch(Exception e){
             System.out.print("Server Crashed " + e.getStackTrace());

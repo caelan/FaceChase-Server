@@ -26,7 +26,7 @@ import com.googlecode.javacv.cpp.opencv_core.IplImage;
  * @author Caelan Garrett
  */
 
-public class FacialRecognition 
+public class FacialRecognitionLittleLessOld
 {
     private final String learningData = "facialRecognition.dat";
     private final String helperData = "helperData.dat";
@@ -40,7 +40,7 @@ public class FacialRecognition
      * 
      * @param type determines the type of classifier - 0 is FisherFace, 1 is LBPHFace, and default is EigenFace
      */
-    public FacialRecognition(boolean loadLast, String directory, int type, int s)
+    public FacialRecognitionLittleLessOld(boolean loadLast, String directory, int type, int s)
     {
         File loadFile1 = new File(System.getProperty("user.dir") + "\\" + learningData);      
         File loadFile2 = new File(System.getProperty("user.dir") + "\\" + helperData);         
@@ -229,7 +229,7 @@ public class FacialRecognition
         
     public static void main(String[] args) {
         String directory = System.getProperty("user.dir") + "\\TestFaces";
-        FacialRecognition facialRec = new FacialRecognition(true, directory, 2, 100);
+        FacialRecognitionLittleLessOld facialRec = new FacialRecognitionLittleLessOld(true, directory, 2, 100);
 
         Random rand = new Random();
         int selectedID = (Integer)facialRec.ids.toArray()[rand.nextInt(facialRec.ids.size())];

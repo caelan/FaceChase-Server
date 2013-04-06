@@ -18,6 +18,7 @@ import java.util.Scanner;
 
 import server.Player;
 import util.Constants;
+import util.FileSystem;
 import util.Pair;
 
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
@@ -69,18 +70,11 @@ public class FacialRecognition
 
     public Pair<MatVector, int[]> loadTestFaces(String directory, int number)
     {
-        long startTime = System.nanoTime();
         File root = new File(directory);
         if(!root.exists() || !root.isDirectory())
             return null;
 
-        FilenameFilter directoryFilter = new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                return new File(dir.getAbsolutePath() + "\\" + name).isDirectory();
-            }
-        };
-
-        File[] people = root.listFiles(directoryFilter);
+        File[] people = root.listFiles(FileSystem.makeFolderFilter());
         ArrayList<File> people2 = new ArrayList<File>(Arrays.asList(people));
         Collections.shuffle(people2, new Random(System.nanoTime()));
         people2.toArray(people);
@@ -96,11 +90,7 @@ public class FacialRecognition
             number = people.length;
         }
 
-        FilenameFilter pgmFilter = new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                return name.toLowerCase().endsWith(".pgm");
-            }
-        };
+        FilenameFilter pgmFilter = FileSystem.makeFileFilter("pgm");
 
         LinkedList<File> faceFileList = new LinkedList<File>();
         LinkedList<Integer> labelList = new LinkedList<Integer>();
@@ -129,9 +119,6 @@ public class FacialRecognition
 
             faces.put(i, img);
         }
-
-        long loadTime = System.nanoTime();
-        System.out.println("Load Time: " + (loadTime - startTime)/1000000000.0 + " seconds");
         
         return new Pair<MatVector, int[]>(faces, labels);
     }
@@ -216,7 +203,7 @@ public class FacialRecognition
     
     public boolean save()
     {
-        long startTime = System.nanoTime();                
+        //long startTime = System.nanoTime();                
         
         try{
             classifier.save(directory + learningData);
@@ -236,14 +223,14 @@ public class FacialRecognition
             return false;
         }
         
-        long saveTime = System.nanoTime();
-        System.out.println("Save Time: " + (saveTime - startTime)/1000000000.0 + " seconds");
+        //long saveTime = System.nanoTime();
+        //System.out.println("Save Time: " + (saveTime - startTime)/1000000000.0 + " seconds");
         return true;
     }
     
     public boolean load()
     {
-        long startTime = System.nanoTime();
+        //long startTime = System.nanoTime();
         
         try 
         {
@@ -268,8 +255,8 @@ public class FacialRecognition
             return false;
         }        
      
-        long loadTime = System.nanoTime();
-        System.out.println("Load Time: " + (loadTime - startTime)/1000000000.0 + " seconds");
+        //long loadTime = System.nanoTime();
+        //System.out.println("Load Time: " + (loadTime - startTime)/1000000000.0 + " seconds");
         return true;
     }
         

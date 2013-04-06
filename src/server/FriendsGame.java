@@ -8,10 +8,16 @@ import java.io.IOException;
 import util.FileSystem;
 
 public class FriendsGame extends Game {
-    public FriendsGame(int id, String refDir)
+    public FriendsGame(int id, String refDir, boolean load)
     {
-        super(id, refDir);
-        joinAfterCreation = true;
+        super(id, refDir, load);
+        if(load)
+        {
+        }
+        else
+        {
+            joinAfterCreation = true;
+        }
     }
     
     public Status createPlayerStatus(Player p)
@@ -21,39 +27,23 @@ public class FriendsGame extends Game {
         return s;
     }
     
-    public boolean save() //Could inherit instead of implement
+    public String gameType()
     {
-        File saveDirFile = new File(saveDir);
-        if(saveDirFile.exists())
-        {
-            try {
-                FileSystem.delete(saveDirFile);
-            } catch (IOException e) {
-                return false;
-            }
-        }
-        
-        saveDirFile.mkdirs();
-        
-        try{            
-            FileWriter fstream = new FileWriter(saveDir + saveData);
-            BufferedWriter out = new BufferedWriter(fstream);
-            out.write("FriendsGame\n");
-            
-            for(Player p: playerStatus.keySet())
-                out.write("" + p.getID());
-            
-            out.close();
-        }
-        catch (Exception e)
-        {
-            return false;
-        }
-                
-        facialRec.save();
-        
-        //Save the statuses here
-        
+        return "FriendsGame";
+    }
+    
+    public String toString()
+    {
+        return "FriendsGame " + id;
+    }
+    
+    public boolean typeSpecificSave() //TODO
+    {
         return true;
+    }
+    
+    public boolean typeSpecificLoad() //TODO
+    {
+        return false;
     }
 }

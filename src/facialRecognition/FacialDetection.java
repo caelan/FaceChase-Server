@@ -13,7 +13,7 @@ import static com.googlecode.javacv.cpp.opencv_objdetect.*;
 public class FacialDetection 
 {
     private final String CASCADE_FILE;
-    public CvHaarClassifierCascade cascade;
+    private CvHaarClassifierCascade cascade;
     
     public FacialDetection()
     {

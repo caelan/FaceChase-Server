@@ -1,13 +1,28 @@
 package server;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.net.Socket;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ThreadPool {
-    private HashMap<Integer, IOThread> connectionMap; //TODO concurrent...
-    public ThreadPool()
+    private ConcurrentHashMap<Integer, IOThread> connectionMap; 
+    private int totalConnected;
+    private Server server;
+    public ThreadPool(Server server)
     {
-        connectionMap = new HashMap<Integer, IOThread>();
+        this.server = server;
+        totalConnected = 0;
+        connectionMap = new ConcurrentHashMap<Integer, IOThread>();
+    }
+    
+    public synchronized void addThread(Socket socket)
+    {
+        totalConnected+=1;
+        new IOThread(server, this, socket).start();
+    }
+    
+    public synchronized void decreaseThreadCount()
+    {
+        totalConnected-=1;
     }
     
     public boolean putConnection(int id, IOThread thread)
@@ -23,10 +38,11 @@ public class ThreadPool {
         if(!connectionMap.containsKey(id))
             return false;        
         connectionMap.remove(id);
+        decreaseThreadCount();
         return true;
     }
     
-    public boolean sendMessage(int id, String message)
+    public boolean sendMessage(int id, String message) //Ideally each user will have a connection queue, but for now nope
     {
         if(!connectionMap.containsKey(id))
             return false;

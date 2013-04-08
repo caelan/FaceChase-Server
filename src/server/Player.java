@@ -13,17 +13,19 @@ public class Player
     private File faceFolder;
     private String profilePicture;
     
-    //password
-    //email
+    private String password;
+    private String email;
     
     private HashSet<Integer> friends;   
     private HashMap<Game, Status> gameStatus;
     
-    public Player(int id, String username, String name)
+    public Player(int id, String email, String password)
     {
         this.id = id;
-        this.username = username;
-        this.name = name;
+        //this.username = username;
+        //this.name = name;
+        this.email = email;
+        this.password = password;
         friends = new HashSet<Integer>();
         gameStatus = new HashMap<Game, Status>();
     }
@@ -41,7 +43,7 @@ public class Player
     
     public String toString()
     {
-        return "Player " + id + " | Username: " + username;
+        return "Player " + id + " | Email: " + email;
     }
     
     public int hashCode()
@@ -57,6 +59,11 @@ public class Player
     public int getID()
     {
         return id;
+    }
+    
+    public String getPassword()
+    {
+        return password;
     }
     
     public HashSet<Integer> getFriends()

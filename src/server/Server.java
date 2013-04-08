@@ -17,6 +17,11 @@ public class Server {
     private ServerComm comm;
     private PlayerPool playerPool;
     private GamePool gamePool;
+    
+    /*
+     * TODO check to see if an existing server is running...
+     * 
+     */
 
     public Server(int port, String workDir, boolean load) throws IOException {
         SwingUtilities.invokeLater(new Runnable() {
@@ -43,7 +48,7 @@ public class Server {
                 {
                     //User canceled/closed Dialog
                     try{
-                    comm.stop();
+                    //comm.stop(); //TODO java.net.SocketException: socket closed error
                     } catch (Exception e)
                     {
                         System.err.println("Could not close connections");
@@ -55,7 +60,7 @@ public class Server {
                 {
                     save();
                     try{
-                    comm.stop();
+                    //comm.stop();
                     } catch (Exception e)
                     {
                         System.err.println("Could not close connections");
@@ -103,18 +108,84 @@ public class Server {
         p.addToGame(g, s);
     }
     
-    public String addPlayer(String username, String name)
+    public boolean checkEmail(String email)
     {
-        Player p = playerPool.addPlayer(username, name);
-        if(p == null)
-            return "Username Taken";
-        addPlayerToGame(p, gamePool.getGame(0));
-        System.out.println("Added " + p);
-        
-        return "User " + p.getID() + "Added";
+        return true;
     }
     
-    public String processKill(int killerID, String image)
+    public boolean checkPassword(String password)
+    {
+        return true;
+    }
+    
+    public Integer addPlayer(String email, String password, IOThread thread)
+    {
+        Player p = playerPool.addPlayer(email, password);
+        if(p == null)
+            return null;
+        addPlayerToGame(p, gamePool.getGame(0));
+        
+        Integer id = p.getID();
+        if(thread.registerThread(id))
+        {
+            System.out.println("Added " + p);
+            return id;
+        }
+        else
+        {
+            return null;
+        }        
+    }
+    
+    public Integer login(String email, String password, IOThread thread)
+    {
+        Player p = playerPool.login(email, password);
+        if(p == null)
+            return null;
+
+        Integer id = p.getID();
+        if(thread.registerThread(id))
+        {
+            System.out.println("Login " + p);
+            return id;
+        }
+        else
+        {
+            return null;
+        }
+    }
+    
+    public String requestKill(int killerID, String image)
+    {
+        Player killer = playerPool.getPlayer(killerID);
+        if(killer == null)
+            return "Invalid ID";
+        
+        //Something about location from killer
+        
+        //parse image
+        
+        
+        
+        return "";
+    }
+    
+    public String addImage(int killerID, String image)
+    {
+        Player killer = playerPool.getPlayer(killerID);
+        if(killer == null)
+            return "Invalid ID";
+        
+        //Something about location from killer
+        
+        //parse image
+        
+        
+        
+        return "";
+    }
+    
+    public String addFriend(int killerID, String name)
     {
         Player killer = playerPool.getPlayer(killerID);
         if(killer == null)
@@ -190,6 +261,7 @@ public class Server {
             Server server = new Server(portNumber, directory, load);
         }
         catch(Exception e){
+            e.printStackTrace();
             System.out.print("Server Crashed " + e.getStackTrace());
         }
     }

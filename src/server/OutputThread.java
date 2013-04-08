@@ -38,10 +38,14 @@ public class OutputThread extends Thread {
     private void handleConnection() throws IOException {
         PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
         try {
+            out.println("Connected");
+            
             while(ioThread.connected()) {
                 String msgToClient = messagesToClient.poll(15, TimeUnit.SECONDS);
                 if (msgToClient != null) {
                     //processing
+                    
+                    
                     out.println(msgToClient);
                 }                
             }

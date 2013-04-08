@@ -9,40 +9,35 @@ import java.net.Socket;
 
 public class ServerComm {
     private final ServerSocket serverSocket;
-    private int connected;
     private Server server;
+    private ThreadPool pool;
+    private boolean online;
 
+    /*
+     * Could move the pool to be here...
+     * Add server references to everything
+     */
+    
     public ServerComm(Server server, int port) throws IOException {
+        online = true;
         this.server = server;
         serverSocket = new ServerSocket(port);
-        this.connected = 0;
+        pool = new ThreadPool(server);
     }
 
     public void serve() throws IOException {
-        while (true) {
+        while (online) {
             // block until a client connects
-            final Socket socket = serverSocket.accept();
-            Runnable thread = new Runnable(){
-                public void run(){                
-                    try {
-                        connected++;
-                        handleConnection(socket);
-                        connected--;
-                    } catch (IOException e) {
-                        e.printStackTrace(); // but don't terminate serve()
-                    } finally {
-                        try {
-                            socket.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            };
-            new Thread(thread).start();
+            //if(!serverSocket.isClosed())
+            {
+                final Socket socket = serverSocket.accept();
+                System.out.println("Connection Established");
+                pool.addThread(socket);
+            }
         }
     }
-
+    
+    /*
     private void handleConnection(Socket socket) throws IOException {        
         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
@@ -65,54 +60,11 @@ public class ServerComm {
             out.close();
             in.close();
         }
-    }
+    }*/
 
-    private String parseRequest(String input) 
-    {
-        String regex = "(login .+)|" +
-        		"(adduser .+ [a-zA-Z ]+)|" +
-        		"(kill \\d+ \\d+)|" +
-        		"(quit)"; 
-        if(!input.matches(regex)) {
-            return null;
-        }
-        String[] tokens = input.split(" ");
-        if (tokens[0].equals("login")) 
-        {
-            String username = tokens[1];
-            return "";
-        }         
-        else if (tokens[0].equals("adduser")) 
-        {
-            String username = tokens[1];
-            String name = tokens[2]; //Can have spaces...
-            String message = server.addPlayer(username, name);
-            return message;
-        } 
-        else if (tokens[0].equals("kill")) 
-        {
-            int killerID;
-            try{
-                killerID = Integer.parseInt(tokens[1]);
-            } catch(NumberFormatException e){
-                return null;
-            }
-            String image = tokens[2];
-            
-            //Kill request
-            return server.processKill(killerID, image);
-        } 
-        else if (tokens[0].equals("quit")) 
-        {
-            return "quit";
-        } 
-        else
-        {
-            return null;
-        }
-    }
     public void stop() throws IOException {
         serverSocket.close();
+        online = false;
     }
 }
 //Run "telnet localhost 4444" in the Command line

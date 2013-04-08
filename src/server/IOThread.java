@@ -12,12 +12,14 @@ public class IOThread {
     private Integer id;
     private boolean connected;
     private ThreadPool pool;
+    private Server server;
 
-    public IOThread(ThreadPool pool, Socket socket)
+    public IOThread(Server server, ThreadPool pool, Socket socket)
     {
+        this.server = server;
         this.pool = pool;
         connected = false;
-        input = new InputThread(socket, this);
+        input = new InputThread(server, socket, this);
         output = new OutputThread(socket, this);
         id = null;       
     }
@@ -29,6 +31,32 @@ public class IOThread {
         output.start();
     }
     
+    public boolean registerThread(int id)
+    {
+        if(pool.putConnection(id, this))
+        {
+            this.id = id;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    
+    public boolean deregisterThread()
+    {
+        if(pool.removeConnection(id))
+        {
+            this.id = null;
+            return true;
+        }
+        else
+        {
+            return false;
+        }    
+    }
+
     public void writeMessage(String message)
     {
         output.addMessageToQueue(message);
@@ -44,6 +72,8 @@ public class IOThread {
         connected = false;
         if(id != null)
             pool.removeConnection(id);
+        else
+            pool.decreaseThreadCount();
         //Input socket will have already disconnected
         //Output socket will disconnect shortly
     }
@@ -53,7 +83,7 @@ public class IOThread {
         return id;
     }
     
-    public void setID(int i)
+    public void setID(Integer i)
     {
         id = i;
     }

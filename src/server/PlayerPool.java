@@ -20,15 +20,27 @@ public class PlayerPool
         this.saveDir = refDir + "\\Players";
     }
     
-    public synchronized Player addPlayer(String username, String name)
+    public synchronized Player addPlayer(String email, String password)
     {
-        if(usernames.containsKey(username))
+        if(usernames.containsKey(email))
             return null;
-        Player p = new Player(nextID, username, name);
+        Player p = new Player(nextID, email, password);
         playerMap.put(nextID, p);
-        usernames.put(username, nextID);
+        usernames.put(email, nextID);
         nextID++;
         return p;
+    }
+    
+    public synchronized Player login(String email, String password)
+    {
+        if(!usernames.containsKey(email))
+            return null;
+        
+        int id = usernames.get(email);
+        if(!playerMap.get(id).getPassword().equals(password))
+            return null;
+        else
+            return playerMap.get(id);
     }
     
     public synchronized Player removePlayer(int id) //Synchronized

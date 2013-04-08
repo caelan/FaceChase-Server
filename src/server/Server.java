@@ -29,6 +29,19 @@ public class Server {
      */
 
     public Server(int port, String workDir, boolean load) throws IOException {
+        if(load)
+            System.out.println("Loading");
+        else
+            System.out.println("Initializing");
+        
+        //Load/Save
+        comm = new ServerComm(this, port);
+        playerPool = new PlayerPool(workDir, load);
+        gamePool = new GamePool(playerPool, workDir, load);
+        
+        if(!load)
+            initializeOneFriendsGame();
+        
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                JPanel inputPanel = new JPanel();
@@ -63,6 +76,7 @@ public class Server {
                 }
                 else
                 {
+                    System.out.println("Saving");
                     save();
                     try{
                     //comm.stop();
@@ -74,18 +88,11 @@ public class Server {
                     System.exit(0);
                 }
             }
-        });
+        });        
         
-        
-        System.out.println("FaceChase Server Online at Port: " + port);
-        //Load/Save
-        comm = new ServerComm(this, port);
-        playerPool = new PlayerPool(workDir);
-        gamePool = new GamePool(playerPool, workDir, load);
-        
-        if(!load)
-            initializeOneFriendsGame();
+        System.out.println("FaceChase Server Online at IP Address " + getLocalIpAddress() + " and Port " + port);
         comm.serve();
+
     }
     
     public boolean save()
@@ -127,7 +134,11 @@ public class Server {
     {
         Player p = playerPool.addPlayer(email, password);
         if(p == null)
+        {
+            System.out.println("Add Failed");
             return null;
+        }
+        
         addPlayerToGame(p, gamePool.getGame(0));
         
         Integer id = p.getID();
@@ -138,6 +149,7 @@ public class Server {
         }
         else
         {
+            System.out.println("Add Failed");
             return null;
         }        
     }
@@ -146,7 +158,10 @@ public class Server {
     {
         Player p = playerPool.login(email, password);
         if(p == null)
+        {
+            System.out.println("Login Failed");
             return null;
+        }
 
         Integer id = p.getID();
         if(thread.registerThread(id))
@@ -156,6 +171,7 @@ public class Server {
         }
         else
         {
+            System.out.println("Login Failed");
             return null;
         }
     }

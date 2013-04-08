@@ -12,4 +12,19 @@ public class General {
         Collections.shuffle(arrayList, new Random(System.nanoTime()));
         arrayList.toArray(array);
     }
+    public static Integer parseInt(String s)
+    {
+        if(s.equals("null"))
+            return null;
+        else
+            return Integer.parseInt(s);
+    }
+    
+    public static Double parseDouble(String s)
+    {
+        if(s.equals("null"))
+            return null;
+        else
+            return Double.parseDouble(s);
+    }
 }

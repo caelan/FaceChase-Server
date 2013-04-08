@@ -70,6 +70,7 @@ public class InputThread extends Thread {
 
     private String parseRequest(String input)
     {
+        System.out.println(input);
         String separator = " " + Constants.itemDelim + " ";
         String regex = "(Login" + separator + ".+" + separator + ".+)|" +
                 "(AddUser" + separator + ".+" +  separator + ".+)|" +

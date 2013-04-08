@@ -76,6 +76,6 @@ public class FriendsGame extends Game {
     
     public boolean typeSpecificLoad() //TODO
     {
-        return false;
+        return true;
     }
 }

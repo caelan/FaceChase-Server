@@ -19,12 +19,19 @@ public class PlayerPool
     private String saveDir;
     private final String saveData = "\\saveData.dat";
 
-    public PlayerPool(String refDir)
+    public PlayerPool(String refDir, boolean load)
     {        
-        nextID = 0;
-        playerMap = new HashMap<Integer, Player>();
-        usernames = new HashMap<String, Integer>();
         this.saveDir = refDir + "\\Players";
+        if(load)
+        {
+            load();
+        }
+        else
+        {
+            nextID = 0;
+            playerMap = new HashMap<Integer, Player>();
+            usernames = new HashMap<String, Integer>();
+        }
     }
     
     public synchronized Player addPlayer(String email, String password)

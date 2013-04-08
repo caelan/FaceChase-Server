@@ -48,6 +48,7 @@ public class FacialRecognition
 
     public FacialRecognition(String directory)
     {
+        this.directory = directory;
         if(!load())
             throw new RuntimeException("Unable to load file");
     }

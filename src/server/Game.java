@@ -12,6 +12,7 @@ import com.googlecode.javacv.cpp.opencv_core.MatVector;
 
 import util.Constants;
 import util.FileSystem;
+import util.General;
 
 import facialRecognition.FacialRecognition;
 
@@ -122,16 +123,17 @@ public abstract class Game {
     {
         try 
         {           
-            Scanner scanner =  new Scanner(new File(saveDir));
+            Scanner scanner =  new Scanner(new File(saveDir + saveData));
             scanner.nextLine(); //Game id
-            
+
             active = Boolean.parseBoolean(scanner.nextLine().split(" ")[1]);
             terminated = Boolean.parseBoolean(scanner.nextLine().split(" ")[1]);
             joinAfterCreation = Boolean.parseBoolean(scanner.nextLine().split(" ")[1]);
-            facesPerPerson = Integer.parseInt(scanner.nextLine().split(" ")[1]);
-            killThreshold = Double.parseDouble(scanner.nextLine().split(" ")[1]);
-            testFaces = Integer.parseInt(scanner.nextLine().split(" ")[1]);
-                        
+            
+            facesPerPerson = General.parseInt(scanner.nextLine().split(" ")[1]);
+            killThreshold = General.parseDouble(scanner.nextLine().split(" ")[1]);
+            testFaces = General.parseInt(scanner.nextLine().split(" ")[1]);
+      
             if(!typeSpecificLoad())
             {
                 scanner.close();
@@ -147,7 +149,7 @@ public abstract class Game {
             }
             scanner.close();
             
-            facialRec = new FacialRecognition(saveDir, Constants.classifierType, Constants.faceSize, facesPerPerson);
+            facialRec = new FacialRecognition(saveDir);
             facialRec.load();
         }
         catch (Exception e)

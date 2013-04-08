@@ -1,16 +1,11 @@
 package server;
 
-import static com.googlecode.javacv.cpp.opencv_contrib.createEigenFaceRecognizer;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Scanner;
-
-import facialRecognition.FacialDetection;
 
 import util.FileSystem;
 
@@ -19,9 +14,11 @@ public class GamePool {
     private HashMap<Integer, Game> gameMap; //Concurrent vs Synchronized or use array
     private String saveDir;
     private final String saveData = "\\saveData.dat";
+    private PlayerPool playerPool;
     
-    public GamePool(String refDir, boolean load)
+    public GamePool(PlayerPool playerPool, String refDir, boolean load)
     {        
+        this.playerPool = playerPool;
         this.saveDir = refDir + "\\Games";
         if(load)
         {
@@ -36,7 +33,7 @@ public class GamePool {
     
     public synchronized Game addFriendsGame()
     {
-        Game game = new FriendsGame(nextID, saveDir, false);
+        Game game = new FriendsGame(playerPool, nextID, saveDir, false);
         gameMap.put(nextID, game);
         nextID++;
         return game;
@@ -80,7 +77,7 @@ public class GamePool {
             out.write("Games:\n");
             for(int id: gameMap.keySet())
             {
-                out.write(""+gameMap.get(id));
+                out.write(""+gameMap.get(id) + "\n");
             }
 
             out.close();
@@ -123,7 +120,7 @@ public class GamePool {
                 
                 if(name.equals("FriendsGame"))
                 {
-                    Game g = new FriendsGame(id, saveDir, true);
+                    Game g = new FriendsGame(playerPool, id, saveDir, true);
                     gameMap.put(id, g);
                 }
                 else

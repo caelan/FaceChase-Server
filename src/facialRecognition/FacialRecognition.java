@@ -11,6 +11,7 @@ import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Random;
@@ -19,6 +20,7 @@ import java.util.Scanner;
 import server.Player;
 import util.Constants;
 import util.FileSystem;
+import util.General;
 import util.Pair;
 
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
@@ -36,12 +38,13 @@ public class FacialRecognition
     private final String learningData = "\\facialRecognition.dat";
     private final String helperData = "\\helperData.dat";
     public FaceRecognizer classifier;
-    public HashSet<Integer> ids;
+    public HashMap<Integer, Integer> ids;
     public FacialDetection detect;
     /** type determines the type of classifier - 0 is FisherFace, 1 is LBPHFace, and default is EigenFace **/
     public int size;
     private int algorithm;
     private String directory;
+    private Integer maxFacesPerPerson;
 
     public FacialRecognition(String directory)
     {
@@ -49,19 +52,20 @@ public class FacialRecognition
             throw new RuntimeException("Unable to load file");
     }
     
-    public FacialRecognition(String directory, int type, int size)
+    public FacialRecognition(String directory, int type, int size, Integer maxFaces)
     {        
         this.directory = directory;
         createClassifier(type);
         this.algorithm = type;
         this.size = size;
-        ids = new HashSet<Integer>();
+        ids = new HashMap<Integer, Integer>();
         detect = new FacialDetection();
+        maxFacesPerPerson = maxFaces;
     }
     
-    public FacialRecognition(int testFaces, String directory, int type, int size)
+    public FacialRecognition(int testFaces, String directory, int type, int size, Integer maxFaces)
     {        
-        this(directory, type, size);
+        this(directory, type, size, maxFaces);
         
         Pair<MatVector, int[]> pair = loadTestFaces(Constants.testFacesDir, testFaces);
         if(pair != null)       
@@ -75,9 +79,11 @@ public class FacialRecognition
             return null;
 
         File[] people = root.listFiles(FileSystem.makeFolderFilter());
-        ArrayList<File> people2 = new ArrayList<File>(Arrays.asList(people));
-        Collections.shuffle(people2, new Random(System.nanoTime()));
-        people2.toArray(people);
+        General.shuffleArray(people);
+        
+        //ArrayList<File> people2 = new ArrayList<File>(Arrays.asList(people));
+        //Collections.shuffle(people2, new Random(System.nanoTime()));
+        //people2.toArray(people);
 
         if(people.length == 0)
         {
@@ -98,10 +104,10 @@ public class FacialRecognition
         {
             File person = people[i];
             int id = Integer.parseInt(person.getName().substring(1));
-            if(ids.contains(id))
-                throw new RuntimeException("Two Folders with Same ID");
-            ids.add(id);
-            for(File faceFile: person.listFiles(pgmFilter))
+            File[] faces = person.listFiles(pgmFilter);
+            General.shuffleArray(faces);
+            
+            for(File faceFile: faces)
             {
                 faceFileList.add(faceFile);
                 labelList.add(-1*id);
@@ -122,18 +128,13 @@ public class FacialRecognition
         
         return new Pair<MatVector, int[]>(faces, labels);
     }
- 
-    public IplImage convertImage(String image) //TODO
-    {
-        return null;
-    }
     
     public Pair<MatVector, int[]> convertPlayers(LinkedList<Player> players) //TODO
     {
         return null;
     }
     
-    public void createClassifier(int type)
+    private void createClassifier(int type)
     {
         switch(type){
         case 0:
@@ -151,28 +152,44 @@ public class FacialRecognition
         }
     }
         
-    public void train(MatVector faces, int[] labels)
+    public synchronized void train(MatVector faces, int[] labels)
     {
-        long startTime = System.nanoTime();
+        //long startTime = System.nanoTime();
+        
+        for(int id: labels)
+            if(!ids.containsKey(id))
+            {
+                ids.put(id, 1);
+            }
+            else if(maxFacesPerPerson == null || ids.get(id) <= maxFacesPerPerson)
+            {
+                ids.put(id, ids.get(id) + 1);
+            }
         
         classifier.train(faces, labels);  
 
-        long trainTime = System.nanoTime();
-        System.out.println("Train Time: " + (trainTime - startTime)/1000000000.0 + " seconds");
-
-        save();      
+        //long trainTime = System.nanoTime();
+        //System.out.println("Train Time: " + (trainTime - startTime)/1000000000.0 + " seconds");
     }
     
-    public void update(MatVector faces, int[] labels)
+    public synchronized void update(MatVector faces, int[] labels) //Run in background?
     {
-        long startTime = System.nanoTime();        
+        //long startTime = System.nanoTime();        
+        
+        for(int id: labels)
+            if(!ids.containsKey(id))
+            {
+                ids.put(id, 1);
+            }
+            else if(maxFacesPerPerson == null || ids.get(id) <= maxFacesPerPerson)
+            {
+                ids.put(id, ids.get(id) + 1);
+            }
         
         classifier.update(faces, labels);  
         
-        long updateTime = System.nanoTime();
-        System.out.println("Update Time: " + (updateTime - startTime)/1000000000.0 + " seconds");
-
-        save();  
+        //long updateTime = System.nanoTime();
+        //System.out.println("Update Time: " + (updateTime - startTime)/1000000000.0 + " seconds");
     }
     
     public IplImage extractFace(IplImage img)
@@ -188,12 +205,12 @@ public class FacialRecognition
         }
     }
     
-    public int predict(IplImage img)
+    public synchronized int predict(IplImage img)
     {
         return classifier.predict(extractFace(img));
     }
     
-    public Pair<Integer, Double> predictConfidence(IplImage img)
+    public synchronized Pair<Integer, Double> predictConfidence(IplImage img)
     {
         int[] predictedLabel = new int[1];
         double[] confidence = new double[1];
@@ -201,7 +218,7 @@ public class FacialRecognition
         return new Pair<Integer, Double>(predictedLabel[0], confidence[0]);
     }
     
-    public boolean save()
+    public synchronized boolean save()
     {
         //long startTime = System.nanoTime();                
         
@@ -212,8 +229,8 @@ public class FacialRecognition
             BufferedWriter out = new BufferedWriter(fstream);
             out.write("" + algorithm +"\n");
             out.write("" + size +"\n");
-            for(int elem: ids)
-                out.write("" + elem +"\n");
+            for(int elem: ids.keySet())
+                out.write("" + elem + " " + ids.get(elem) + "\n");
 
             out.close();
         }
@@ -228,14 +245,14 @@ public class FacialRecognition
         return true;
     }
     
-    public boolean load()
+    public synchronized boolean load()
     {
         //long startTime = System.nanoTime();
         
         try 
         {
             detect = new FacialDetection();
-            ids = new HashSet<Integer>();
+            ids = new HashMap<Integer, Integer>();
             
             Scanner scanner =  new Scanner(new File(directory + helperData));
             algorithm = Integer.parseInt(scanner.nextLine());
@@ -243,7 +260,8 @@ public class FacialRecognition
            
             while (scanner.hasNextLine())
             {
-                ids.add(Integer.parseInt(scanner.nextLine()));
+                String[] split = scanner.nextLine().split(" ");
+                ids.put(Integer.parseInt(split[0]), Integer.parseInt(split[1]));
             }
             
             classifier = createEigenFaceRecognizer();
@@ -262,11 +280,11 @@ public class FacialRecognition
         
     public static void main(String[] args) {
         String directory = System.getProperty("user.dir");
-        FacialRecognition facialRec = new FacialRecognition(40, directory, 2, 100);
+        FacialRecognition facialRec = new FacialRecognition(40, directory, 2, 100, null);
         //FacialRecognition facialRec = new FacialRecognition(directory);
 
         Random rand = new Random();
-        int selectedID = (Integer)facialRec.ids.toArray()[rand.nextInt(facialRec.ids.size())];
+        int selectedID = (Integer)facialRec.ids.keySet().toArray()[rand.nextInt(facialRec.ids.size())];
         File person = new File(System.getProperty("user.dir") + "\\TestFaces\\s" + selectedID);
         
         FilenameFilter pgmFilter = new FilenameFilter() {

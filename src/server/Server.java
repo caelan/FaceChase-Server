@@ -1,7 +1,6 @@
 package server;
 
 import java.awt.GridLayout;
-import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -24,6 +23,8 @@ public class Server {
     
     /*
      * TODO check to see if an existing server is running...
+     * Services running
+     * Network checking
      * 
      */
 
@@ -80,7 +81,7 @@ public class Server {
         //Load/Save
         comm = new ServerComm(this, port);
         playerPool = new PlayerPool(workDir);
-        gamePool = new GamePool(workDir, load);
+        gamePool = new GamePool(playerPool, workDir, load);
         
         if(!load)
             initializeOneFriendsGame();
@@ -159,14 +160,23 @@ public class Server {
         }
     }
     
-    public String requestKill(int killerID, String image)
+    public Player requestKill(int killerID, String image) //What if different facial recs in different games don't agree
     {
         Player killer = playerPool.getPlayer(killerID);
+ 
+        for(Game g: killer.getGames().keySet()) //Stop at first game for now
+        {
+            Player dead = g.killRequest(killer, ImageFormat.convertToImage(image));
+            if(dead == null)
+                continue;
+            
+            //Something about location from killer
+            
+            return dead;          
+        }
         
-        //Something about location from killer
-        ImageFormat.convertToImage(image);        
         
-        return "";
+        return null;
     }
     
     public boolean addImage(int id, String image)

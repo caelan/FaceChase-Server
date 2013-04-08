@@ -99,7 +99,7 @@ public class InputThread extends Thread {
                 return "User " + id;
             }
         }         
-        else if (tokens[0].equals("(AddUser")) 
+        else if (tokens[0].equals("AddUser")) 
         {
             if(ioThread.getID() != null)
                 return "Already Logged In";
@@ -119,7 +119,11 @@ public class InputThread extends Thread {
         else if (tokens[0].equals("RequestKill")) 
         {
             String image = tokens[1];           
-            return server.requestKill(ioThread.getID(), image);
+            Player p = server.requestKill(ioThread.getID(), image);
+            if(p == null)
+                return "Invalid Kill";
+            else
+                return "Killed " + p;
         } 
         else if (tokens[0].equals("AddPicture")) 
         {

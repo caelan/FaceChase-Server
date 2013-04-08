@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import com.googlecode.javacv.cpp.opencv_core.IplImage;
+
 public class Player 
 {
     private int id;
@@ -36,7 +38,7 @@ public class Player
         gameStatus.put(g, s);
     }
     
-    public void addFace()
+    public void addFace(IplImage i)
     {
         
     }
@@ -64,6 +66,12 @@ public class Player
     public String getPassword()
     {
         return password;
+    }
+    
+    public void addFriend(Player p)
+    {
+        friends.add(p.getID());
+        //Go through game - don't store targets in gamestatus for this one
     }
     
     public HashSet<Integer> getFriends()

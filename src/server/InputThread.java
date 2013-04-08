@@ -72,10 +72,10 @@ public class InputThread extends Thread {
     {
         String separator = " " + Constants.itemDelim + " ";
         String regex = "(Login" + separator + ".+" + separator + ".+)|" +
-                "(Add User" + separator + ".+" +  separator + ".+)|" +
-                "(Request Kill" + separator + "\\d+)|" +
-                "(Add Picture" + separator + "\\d+)|" +
-                "(Add Friend" + separator + ".+)|" +
+                "(AddUser" + separator + ".+" +  separator + ".+)|" +
+                "(RequestKill" + separator + "\\d+)|" +
+                "(AddPicture" + separator + "\\d+)|" +
+                "(AddFriend" + separator + ".+)|" +
                 "(Quit)|" + 
                 "(Logout)";
         if(!input.matches(regex)) {
@@ -99,7 +99,7 @@ public class InputThread extends Thread {
                 return "User " + id;
             }
         }         
-        else if (tokens[0].equals("(Add User")) 
+        else if (tokens[0].equals("(AddUser")) 
         {
             if(ioThread.getID() != null)
                 return "Already Logged In";
@@ -116,27 +116,34 @@ public class InputThread extends Thread {
                 return "User " + id;
             }
         } 
-        else if (tokens[0].equals("Request Kill")) 
+        else if (tokens[0].equals("RequestKill")) 
         {
             String image = tokens[1];           
             return server.requestKill(ioThread.getID(), image);
         } 
-        else if (tokens[0].equals("Add Picture")) 
+        else if (tokens[0].equals("AddPicture")) 
         {
-            String image = tokens[1];           
-            return server.addImage(ioThread.getID(), image);
+            String image = tokens[1]; 
+            if(server.addImage(ioThread.getID(), image))
+                return "Success";
+            else
+                return "Unable to Add Image";
+                        
         } 
-        else if (tokens[0].equals("Add Friend")) 
+        else if (tokens[0].equals("AddFriend")) 
         {
             String email = tokens[1];           
-            return server.addFriend(ioThread.getID(), email);
+            if(server.addFriend(ioThread.getID(), email))
+                return "Success";
+            else
+                return "Unable to Add Friend";
         } 
         else if (tokens[0].equals("Quit")) //Exit
         {
             //ioThread.writeMessage("quit");
             return "Quit";
         } 
-        else if (tokens[0].equals("logout"))  //Stay connected, just remove user
+        else if (tokens[0].equals("Logout"))  //Stay connected, just remove user
         {
             if(ioThread.getID() == null)
                 return "Not Logged In";

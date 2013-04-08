@@ -3,6 +3,8 @@ package server;
 import java.awt.GridLayout;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -11,6 +13,8 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
+
+import facialRecognition.ImageFormat;
 
 
 public class Server {
@@ -158,47 +162,42 @@ public class Server {
     public String requestKill(int killerID, String image)
     {
         Player killer = playerPool.getPlayer(killerID);
-        if(killer == null)
-            return "Invalid ID";
         
         //Something about location from killer
-        
-        //parse image
-        
-        
+        ImageFormat.convertToImage(image);        
         
         return "";
     }
     
-    public String addImage(int killerID, String image)
+    public boolean addImage(int id, String image)
     {
-        Player killer = playerPool.getPlayer(killerID);
-        if(killer == null)
-            return "Invalid ID";
+        Player p = playerPool.getPlayer(id);
+        p.addFace(ImageFormat.convertToImage(image)); //Needs to process image
         
-        //Something about location from killer
-        
-        //parse image
-        
-        
-        
-        return "";
+        return true;
     }
     
-    public String addFriend(int killerID, String name)
+    public boolean addFriend(int id, String name) //TODO 
     {
-        Player killer = playerPool.getPlayer(killerID);
-        if(killer == null)
-            return "Invalid ID";
+        Player p1 = playerPool.getPlayer(id);
+        Player p2 = playerPool.getPlayer(name);
+        if(p2 == null)
+            return false;
         
-        //Something about location from killer
+        p1.addFriend(p2);
+        p2.addFriend(p1);
         
-        //parse image
-        
-        
-        
-        return "";
+        return true;
     }
+    
+    private static String getLocalIpAddress() {
+        try {
+            return InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException e) {
+            return "Unable to Obtain IP";
+        }
+    }
+    
 
     public static void main(String[] args) {   
         try {
@@ -215,10 +214,11 @@ public class Server {
             
         //JOptionPane for prompting which port to connect to 
         JPanel inputPanel = new JPanel();
-        inputPanel.setLayout(new GridLayout(3, 1));
+        inputPanel.setLayout(new GridLayout(4, 1));
         
         //Prompts port number for server
-        inputPanel.add(new JLabel("Initializing Server"));               
+        inputPanel.add(new JLabel("Initializing Server"));    
+        inputPanel.add(new JLabel("Server IP: "+ getLocalIpAddress()));               
         inputPanel.add(new JLabel("Enter Port Number:"));
         JTextField port = new JTextField(10);
         port.setText("" + 4444);

@@ -64,6 +64,22 @@ public class PlayerPool
             return null;
     }
     
+    public synchronized Player getPlayer(String email) //Synchronized
+    {
+        if(usernames.containsKey(email))
+        {
+            int id = usernames.get(email);
+            if(playerMap.containsKey(id))
+                return playerMap.get(id);
+            else
+                return null;
+        }
+        else
+        {
+            return null;
+        }
+    }
+    
     public synchronized boolean save() //TODO
     {
         return false;

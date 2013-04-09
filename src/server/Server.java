@@ -13,8 +13,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 
-import facialRecognition.ImageFormat;
+import util.Pair;
 
+import facialRecognition.ImageFormat;
 
 public class Server {
     private ServerComm comm;
@@ -25,6 +26,12 @@ public class Server {
      * TODO check to see if an existing server is running...
      * Services running
      * Network checking
+     * 
+     * Have to be connected to the same WIFI network now...
+     * 
+     * Have multiple saves/loads
+     * 
+     * Save images 
      * 
      */
 
@@ -116,7 +123,7 @@ public class Server {
     
     public void addPlayerToGame(Player p, Game g)
     {
-        Status s = g.createPlayerStatus(p);
+        Status s = g.addPlayer(p);
         p.addToGame(g, s);
     }
     
@@ -176,7 +183,7 @@ public class Server {
         }
     }
     
-    public Player requestKill(int killerID, String image) //What if different facial recs in different games don't agree
+    public Pair<Player, Player> requestKill(int killerID, String image) //What if different facial recs in different games don't agree
     {
         Player killer = playerPool.getPlayer(killerID);
  
@@ -188,7 +195,7 @@ public class Server {
             
             //Something about location from killer
             
-            return dead;          
+            return new Pair<Player, Player>(killer, dead);          
         }
         
         

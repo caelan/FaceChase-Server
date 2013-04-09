@@ -1,9 +1,6 @@
 package server;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -37,31 +34,6 @@ public class ServerComm {
         }
     }
     
-    /*
-    private void handleConnection(Socket socket) throws IOException {        
-        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-
-        try {
-            out.println("You have connected to FaceChase\n");
-            for (String line =in.readLine(); line!=null; line=in.readLine()) {
-                String output = parseRequest(line);
-                if(output == null)
-                {
-                    out.println("Invalid Request");
-                }
-                else if(output.equals("quit"))
-                {
-                    out.println("User Disconnected");
-                    break;
-                }
-            }
-        } finally {        
-            out.close();
-            in.close();
-        }
-    }*/
-
     public void stop() throws IOException {
         serverSocket.close();
         online = false;

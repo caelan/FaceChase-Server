@@ -27,4 +27,22 @@ public class General {
         else
             return Double.parseDouble(s);
     }
+    
+    public static Long parseLong(String s)
+    {
+        if(s.equals("null"))
+            return null;
+        else
+            return Long.parseLong(s);
+    }
+    
+    public static double nanoToMilli(long nano)
+    {
+        return nano/1000000.0;
+    }
+    
+    public static double minToMilli(double min)
+    {
+        return min/(60.0*1000);
+    }
 }

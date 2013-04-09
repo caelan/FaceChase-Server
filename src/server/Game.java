@@ -10,7 +10,6 @@ import java.util.Scanner;
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
 import com.googlecode.javacv.cpp.opencv_core.MatVector;
 
-import util.Constants;
 import util.FileSystem;
 import util.General;
 
@@ -48,7 +47,7 @@ public abstract class Game {
         }
     }
     
-    public abstract Status createPlayerStatus(Player p);
+    public abstract Status addPlayer(Player p);
     public abstract Player killRequest(Player killer, IplImage image);
     public abstract String toString();
     public abstract String gameType();
@@ -74,14 +73,14 @@ public abstract class Game {
     public boolean save()
     {
         File saveDirFile = new File(saveDir);
-        if(saveDirFile.exists())
+        /*if(saveDirFile.exists())
         {
             try {
                 FileSystem.delete(saveDirFile);
             } catch (IOException e) {
                 return false;
             }
-        }
+        }*/
 
         saveDirFile.mkdirs();
 
@@ -115,8 +114,9 @@ public abstract class Game {
 
         facialRec.save();
 
-        //Save the statuses here
-
+        for(Player p: playerStatus.keySet())
+            playerStatus.get(p).save();
+        
         return true;
     }
     public boolean load()
@@ -145,7 +145,9 @@ public abstract class Game {
             while (scanner.hasNextLine())
             {
                 int id = Integer.parseInt(scanner.nextLine());
-                //TODO append player/status
+                Status s = addPlayer(playerPool.getPlayer(id));
+                s.load();
+                playerPool.getPlayer(id).addToGame(this, s);
             }
             scanner.close();
             
@@ -157,6 +159,11 @@ public abstract class Game {
             return false;
         }     
         return true;
+    }
+    
+    public String getDir()
+    {
+        return saveDir;
     }
     
     public int hashCode()

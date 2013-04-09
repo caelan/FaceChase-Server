@@ -62,6 +62,11 @@ public class IOThread {
         output.addMessageToQueue(message);
     }
     
+    public boolean writeMessageOtherThread(String message, int id)
+    {
+        return pool.sendMessage(id, message);
+    }
+    
     public boolean connected()
     {
         return connected;

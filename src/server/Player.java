@@ -9,12 +9,9 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Scanner;
 
-import util.Constants;
 import util.FileSystem;
 
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
-
-import facialRecognition.FacialRecognition;
 
 public class Player 
 {

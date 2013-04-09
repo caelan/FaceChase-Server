@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.net.Socket;
 
 import util.Constants;
+import util.Pair;
 
 public class InputThread extends Thread {
 
@@ -44,11 +45,10 @@ public class InputThread extends Thread {
         try {
             String input = in.readLine();
             while(ioThread.connected() && input != null) {
-                //Proccess
                 String output = parseRequest(input);
                 if(output == null)
                 {
-                    ioThread.writeMessage("Invalid Request");
+                    ioThread.writeMessage("InvalidRequest");
                 }
                 else if(output.equals("Quit"))
                 {
@@ -63,6 +63,8 @@ public class InputThread extends Thread {
             }
         } finally 
         {
+            if(ioThread.getID() != null) //TODO keep logged in even after failure
+                ioThread.deregisterThread();
             ioThread.disconnect();
             in.close();
         }        
@@ -70,7 +72,7 @@ public class InputThread extends Thread {
 
     private String parseRequest(String input)
     {
-        System.out.println(input);
+        System.out.println(">>" + input);
         String separator = " " + Constants.itemDelim + " ";
         String regex = "(Login" + separator + ".+" + separator + ".+)|" +
                 "(AddUser" + separator + ".+" +  separator + ".+)|" +
@@ -86,14 +88,14 @@ public class InputThread extends Thread {
         if (tokens[0].equals("Login")) 
         {
             if(ioThread.getID() != null)
-                return "Already Logged In";
+                return "AlreadyLoggedIn";
             
             String email = tokens[1];
             String password = tokens[2];
             Integer id = server.login(email, password, ioThread);
             if(id == null)
             {
-                return "Could Not Log In";
+                return "InvalidLogin";
             }
             else
             {
@@ -103,14 +105,14 @@ public class InputThread extends Thread {
         else if (tokens[0].equals("AddUser")) 
         {
             if(ioThread.getID() != null)
-                return "Already Logged In";
+                return "AlreadyLoggedIn";
             
             String email = tokens[1];
             String password = tokens[2];
             Integer id = server.addPlayer(email, password, ioThread);
             if(id == null)
             {
-                return "Email Already Registered";
+                return "EmailAlreadyRegistered";
             }
             else
             {
@@ -119,43 +121,59 @@ public class InputThread extends Thread {
         } 
         else if (tokens[0].equals("RequestKill")) 
         {
+            if(ioThread.getID() == null)
+                return "NotLoggedIn";
+            
             String image = tokens[1];           
-            Player p = server.requestKill(ioThread.getID(), image);
-            if(p == null)
-                return "Invalid Kill";
+            Pair<Player, Player> pair = server.requestKill(ioThread.getID(), image);
+            if(pair == null)
+            {
+                return "InvalidKill";
+            }
             else
-                return "Killed " + p;
+            {
+                ioThread.writeMessageOtherThread("Dead " + pair.getFirst().getEmail(), pair.getSecond().getID());
+                return "Killed " + pair.getSecond().getEmail();
+            }
         } 
         else if (tokens[0].equals("AddPicture")) 
         {
+            if(ioThread.getID() == null)
+                return "NotLoggedIn";
+            
             String image = tokens[1]; 
             if(server.addImage(ioThread.getID(), image))
                 return "Success";
             else
-                return "Unable to Add Image";
+                return "UnableToAddImage";
                         
         } 
         else if (tokens[0].equals("AddFriend")) 
         {
+            if(ioThread.getID() == null)
+                return "NotLoggedIn";
+            
             String email = tokens[1];           
             if(server.addFriend(ioThread.getID(), email))
                 return "Success";
             else
-                return "Unable to Add Friend";
+                return "UnableToAddFriend";
         } 
         else if (tokens[0].equals("Quit")) //Exit
         {
-            //ioThread.writeMessage("quit");
+            if(ioThread.getID() != null)
+                ioThread.deregisterThread();
+            
             return "Quit";
         } 
         else if (tokens[0].equals("Logout"))  //Stay connected, just remove user
         {
             if(ioThread.getID() == null)
-                return "Not Logged In";
+                return "NotLoggedIn";
             
             ioThread.deregisterThread();
             
-            return "Logged Out";
+            return "LoggedOut";
         }
         else
         {

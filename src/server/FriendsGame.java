@@ -27,10 +27,11 @@ public class FriendsGame extends Game {
         }
     }
     
-    public Status createPlayerStatus(Player p)
+    public Status addPlayer(Player p)
     {
         Status s = new FriendsStatus(this, p);
         playerStatus.put(p, s);
+        //p.addToGame(this, s); //Somewhere else
         return s;
     }
     
@@ -43,15 +44,29 @@ public class FriendsGame extends Game {
             if(id < 0) //one of the test faces
                 return null;
             
-            Player p = playerPool.getPlayer(id);
+            Player dead = playerPool.getPlayer(id);
+            
+            if(!killer.getFriends().contains(id))
+                return null;
+
+            if(!playerStatus.containsKey(killer))//Don't actually need
+                return null;            
+            Status s1 = playerStatus.get(killer);
+            
+            if(!playerStatus.containsKey(dead)) //Don't actually
+                return null;
+            
+            Status s2 = playerStatus.get(dead);
+            
+            if(!s1.alive() || !s2.alive())
+                return null;
+
+            s1.kill();
+            s2.die();
             
             //Location stuff...
-            //Edit the status
             
-            if(killer.getFriends().contains(id))
-                return p;
-            else
-                return null;
+            return dead;
         }
         else
         {

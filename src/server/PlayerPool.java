@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Scanner;
 import util.FileSystem;
+import util.General;
 
 public class PlayerPool 
 {
@@ -31,11 +32,11 @@ public class PlayerPool
         }
     }
     
-    public synchronized Player addPlayer(String email, String password)
+    public synchronized Player addPlayer(String email, String password, String name)
     {
         if(usernames.containsKey(email))
             return null;
-        Player p = new Player(nextID, saveDir, email, password);
+        Player p = new Player(nextID, saveDir, email, password, name);
         playerMap.put(nextID, p);
         usernames.put(email, nextID);
         nextID++;
@@ -48,7 +49,7 @@ public class PlayerPool
             return null;
         
         int id = usernames.get(email);
-        if(!playerMap.get(id).getPassword().equals(password))
+        if(!playerMap.get(id).getPassword().equals(General.hashPassword(password)))
             return null;
         else
             return playerMap.get(id);
@@ -155,8 +156,8 @@ public class PlayerPool
                 int id = Integer.parseInt(split[1]);
                 String email = split[2];
                 
-                //Player p = new Player(playerPool, id, saveDir, true);
-                //playerMap.put(id, p);
+                Player p = new Player(id, saveDir, true);
+                playerMap.put(id, p);
                 usernames.put(email, id);
             }
             scanner.close();

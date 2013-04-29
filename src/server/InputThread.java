@@ -1,11 +1,18 @@
 package server;
 
 import java.io.BufferedReader;
+
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 
+import com.googlecode.javacv.cpp.opencv_core.IplImage;
+import static com.googlecode.javacv.cpp.opencv_highgui.*;
+
+import facialRecognition.ImageFormat;
+
 import util.Constants;
+import util.General;
 import util.Pair;
 
 public class InputThread extends Thread {
@@ -75,12 +82,23 @@ public class InputThread extends Thread {
         System.out.println(">>" + input);
         String separator = " " + Constants.itemDelim + " ";
         String regex = "(Login" + separator + ".+" + separator + ".+)|" +
-                "(AddUser" + separator + ".+" +  separator + ".+)|" +
-                "(RequestKill" + separator + "\\d+)|" +
-                "(AddPicture" + separator + "\\d+)|" +
+                "(AddUser" + separator + ".+" + separator + ".+" +  separator + ".+)|" +
+                "(RequestKill" + separator + "(\\d+ )*(\\d+))|" +
+                "(AddPicture" + separator + "(\\d+ )*(\\d+))|" +
                 "(AddFriend" + separator + ".+)|" +
                 "(Quit)|" + 
                 "(Logout)";
+        
+        if(input.substring(0, 11).equals("RequestKill"))
+        {
+            String[] tokens = input.split(separator);
+            
+            IplImage image = ImageFormat.convertToImage(tokens[1]);
+            cvSaveImage("testing.jpg", image);
+            
+            return "Weeeeeeeeeeeeee";
+        }
+        
         if(!input.matches(regex)) {
             return null;
         }
@@ -90,8 +108,14 @@ public class InputThread extends Thread {
             if(ioThread.getID() != null)
                 return "AlreadyLoggedIn";
             
-            String email = tokens[1];
+            String email = General.formatEmail(tokens[1]);
+            if(email == null)
+                return "InvalidEmail";
+            
             String password = tokens[2];
+            if(!General.checkPassword(password))
+                return "InvalidPassword";
+            
             Integer id = server.login(email, password, ioThread);
             if(id == null)
             {
@@ -107,9 +131,19 @@ public class InputThread extends Thread {
             if(ioThread.getID() != null)
                 return "AlreadyLoggedIn";
             
-            String email = tokens[1];
-            String password = tokens[2];
-            Integer id = server.addPlayer(email, password, ioThread);
+            String name = tokens[1];
+            if(!General.checkName(name))
+                return "InvalidName";
+            
+            String email = General.formatEmail(tokens[2]);
+            if(email == null)
+                return "InvalidEmail";
+            
+            String password = tokens[3];
+            if(!General.checkPassword(password))
+                return "InvalidPassword";
+            
+            Integer id = server.addPlayer(name, email, password, ioThread);
             if(id == null)
             {
                 return "EmailAlreadyRegistered";
@@ -121,6 +155,8 @@ public class InputThread extends Thread {
         } 
         else if (tokens[0].equals("RequestKill")) 
         {
+            System.out.println("Yay!");
+                        
             if(ioThread.getID() == null)
                 return "NotLoggedIn";
             
@@ -153,7 +189,10 @@ public class InputThread extends Thread {
             if(ioThread.getID() == null)
                 return "NotLoggedIn";
             
-            String email = tokens[1];           
+            String email = General.formatEmail(tokens[1]);
+            if(email == null)
+                return "UnableToAddFriend";
+            
             if(server.addFriend(ioThread.getID(), email))
                 return "Success";
             else

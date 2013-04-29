@@ -10,18 +10,21 @@ import java.util.LinkedList;
 import java.util.Scanner;
 
 import util.FileSystem;
+import util.General;
 
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
+import static com.googlecode.javacv.cpp.opencv_highgui.*;
+import static com.googlecode.javacv.cpp.opencv_core.*;
 
 public class Player 
 {
     private int id;
     private String username;
-    private String name;
     private String profilePicture;
     
-    private String password;
     private String email;
+    private String name;
+    private String password;
     
     private HashSet<Integer> friends;   
     private HashMap<Game, Status> gameStatus;   
@@ -29,6 +32,8 @@ public class Player
     
     private final String saveData = "\\saveData.dat";
     private String saveDir;
+    
+    private int faceCount;
 
     public Player(int id, String refDir, boolean load)
     {
@@ -43,14 +48,16 @@ public class Player
             load();
     }
     
-    public Player(int id, String refDir, String email, String password)
+    public Player(int id, String refDir, String email, String password, String name)
     {
         this.id = id;
         //this.username = username;
         //this.name = name;
         this.email = email;
-        this.password = password;
+        this.password = General.hashPassword(password);
+        this.name = name;
         this.saveDir = refDir + "\\p" + id;
+        this.faceCount = 0;
         
         friends = new HashSet<Integer>();
         gameStatus = new HashMap<Game, Status>();
@@ -61,6 +68,7 @@ public class Player
     {
         //Check if already in the game?
         gameStatus.put(g, s);
+        //TODO load images for the game
     }
     
     public void addFace(IplImage i) //TODO save faces that were matches for better data later
@@ -79,15 +87,22 @@ public class Player
     
     public boolean save()
     {
+        for(IplImage face: facesToBeSaved)
+        {
+            faceCount++;
+            cvSaveImage(saveDir + "\\f" + faceCount + ".jpg", face);
+            cvReleaseImage(face);
+        }
+        
         File saveDirFile = new File(saveDir);
-        if(saveDirFile.exists())
+        /*if(saveDirFile.exists())
         {
             try {
                 FileSystem.delete(saveDirFile);
             } catch (IOException e) {
                 return false;
             }
-        }
+        }*/
 
         saveDirFile.mkdirs();
 
@@ -98,6 +113,8 @@ public class Player
             out.write("id " + id + "\n");
             out.write("email " + email + "\n");
             out.write("password " + password + "\n"); //TODO hash this
+            out.write("name " + name + "\n");
+            out.write("faceCount " + faceCount + "\n");
             
             /*
             out.write("Games:\n");
@@ -115,7 +132,7 @@ public class Player
         {
             return false;
         }
-
+       
         return true;
     }
     
@@ -123,16 +140,18 @@ public class Player
     {
         try 
         {           
-            Scanner scanner =  new Scanner(new File(saveDir));
+            Scanner scanner =  new Scanner(new File(saveDir + saveData));
             scanner.nextLine(); //Player Name
             scanner.nextLine(); //Player ID
             email = scanner.nextLine().split(" ")[1];
             password = scanner.nextLine().split(" ")[1];
-            
+            name = scanner.nextLine().split(" ")[1];
+            faceCount = Integer.parseInt(scanner.nextLine().split(" ")[1]);
+
             /*
             scanner.nextLine(); //Games:
             String line = "";
-            while (scanner.hasNextLine()) //TODO could just not save games on the player side and instead leoad
+            while (scanner.hasNextLine()) //TODO could just not save games on the player side and instead load
             {
                 line = scanner.nextLine();
                 if(line.equals("Friends:"))

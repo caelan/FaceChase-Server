@@ -23,12 +23,12 @@ public class ImageFormat {
         String s = "" + w + " " + h;
         for(int i = 0; i < w*h; i++)
         {
-            s += data[i];
+            s += " " + data[i];
         }
         return s;
     }
     
-    public static String bitmapToString(Bitmap b)
+    /*public static String bitmapToString(Bitmap b) //One on the device is different and is correct
     {
         int w = b.getWidth();
         int h = b.getHeight();
@@ -46,7 +46,7 @@ public class ImageFormat {
         }
         int[] gray = rgbToGray(array, w, h);
         return writeImageAsString(gray, w, h);
-    }
+    }*/
     
     public static IplImage convertToImage(String s)
     {

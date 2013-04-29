@@ -1,0 +1,9 @@
+FriendsGame 0
+active false
+terminated false
+joinAfterCreation true
+facesPerPerson 1
+killThreshold null
+testFaces 10
+Players:
+01

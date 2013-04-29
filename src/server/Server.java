@@ -126,20 +126,10 @@ public class Server {
         Status s = g.addPlayer(p);
         p.addToGame(g, s);
     }
-    
-    public boolean checkEmail(String email)
+        
+    public Integer addPlayer(String name, String email, String password, IOThread thread)
     {
-        return true;
-    }
-    
-    public boolean checkPassword(String password)
-    {
-        return true;
-    }
-    
-    public Integer addPlayer(String email, String password, IOThread thread)
-    {
-        Player p = playerPool.addPlayer(email, password);
+        Player p = playerPool.addPlayer(email, password, name);
         if(p == null)
         {
             System.out.println("Add Failed");
@@ -196,9 +186,7 @@ public class Server {
             //Something about location from killer
             
             return new Pair<Player, Player>(killer, dead);          
-        }
-        
-        
+        }      
         return null;
     }
     
@@ -214,7 +202,7 @@ public class Server {
     {
         Player p1 = playerPool.getPlayer(id);
         Player p2 = playerPool.getPlayer(name);
-        if(p2 == null)
+        if(p2 == null || p1.equals(p2))
             return false;
         
         p1.addFriend(p2);

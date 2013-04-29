@@ -20,6 +20,7 @@ import util.General;
 import util.Pair;
 
 import com.googlecode.javacv.cpp.opencv_core.IplImage;
+import com.googlecode.javacv.cpp.opencv_core.MatVector;
 
 /*
  * TODO
@@ -104,8 +105,14 @@ public class FacialRecognition
             File[] faces = person.listFiles(pgmFilter);
             General.shuffleArray(faces);
             
-            for(File faceFile: faces)
+            int amount;
+            if(maxFacesPerPerson == null)
+                amount = faces.length;
+            else
+                amount = Math.min(maxFacesPerPerson, faces.length);
+            for(int k = 0; k < amount; k++)
             {
+                File faceFile = faces[k];
                 faceFileList.add(faceFile);
                 labelList.add(-1*id);
             }
@@ -124,11 +131,6 @@ public class FacialRecognition
         }
         
         return new Pair<MatVector, int[]>(faces, labels);
-    }
-    
-    public Pair<MatVector, int[]> convertPlayers(LinkedList<Player> players) //TODO
-    {
-        return null;
     }
     
     private void createClassifier(int type)
@@ -191,7 +193,7 @@ public class FacialRecognition
     
     public IplImage extractFace(IplImage img)
     {
-        IplImage face = detect.findFace(img);
+        IplImage face = detect.findRotatedFace(img);
         if(face == null)
         {
             return detect.preprocess(img, size, size);
@@ -275,7 +277,8 @@ public class FacialRecognition
         return true;
     }
         
-    public static void main(String[] args) {
+    private static void test1()
+    {
         String directory = System.getProperty("user.dir");
         FacialRecognition facialRec = new FacialRecognition(40, directory, 2, 100, null);
         //FacialRecognition facialRec = new FacialRecognition(directory);
@@ -293,6 +296,36 @@ public class FacialRecognition
         File testImage = faces[rand.nextInt(faces.length)];
         int predictedID = -1*facialRec.predict(cvLoadImage(testImage.getAbsolutePath()));
         System.out.println("Actual ID: " + selectedID + ", Selected ID: " + predictedID);
+    }
+    
+    private static void test2()
+    {
+        String directory = System.getProperty("user.dir") + "\\facialRecTest";
+        FacialRecognition facialRec = new FacialRecognition(14, directory, 1, 100, 1);
+        
+        IplImage train = cvLoadImage(directory + "\\caelan1.jpg");
+        IplImage test = cvLoadImage(directory + "\\caelan3.jpg");
+        
+        int label = 0;
+
+        final MatVector faces = new MatVector(1);
+        final int[] labels = new int[1];
+
+        labels[0] = label;
+        IplImage stuff = facialRec.extractFace(train);
+        cvSaveImage(directory + "\\caelan1Face.jpg", stuff);
+        cvSaveImage(directory + "\\caelan3Face.jpg", facialRec.extractFace(test));
+        faces.put(0, stuff);
+        
+        facialRec.update(faces, labels);
+        Pair<Integer, Double> pair = facialRec.predictConfidence(test);
+        System.out.println("Actual ID: " + label + ", Selected ID: " + pair.getFirst() + ", Confidence: " + pair.getSecond());
+    }
+    
+    public static void main(String[] args) 
+    {
+        //test1();
+        test2();
     }
 }
 

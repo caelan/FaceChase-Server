@@ -1,7 +1,6 @@
 package facialRecognition;
 
 import static com.googlecode.javacv.cpp.opencv_highgui.*;
-import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_contrib.*;
 
 import java.io.BufferedWriter;
@@ -13,7 +12,6 @@ import java.util.LinkedList;
 import java.util.Random;
 import java.util.Scanner;
 
-import server.Player;
 import util.Constants;
 import util.FileSystem;
 import util.General;

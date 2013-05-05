@@ -13,6 +13,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 
+import com.googlecode.javacv.cpp.opencv_core.IplImage;
+import static com.googlecode.javacv.cpp.opencv_highgui.*;
+
 import util.Pair;
 
 import facialRecognition.ImageFormat;
@@ -177,9 +180,12 @@ public class Server {
     {
         Player killer = playerPool.getPlayer(killerID);
  
+        IplImage iplimage = ImageFormat.convertToImage(image);
+        cvSaveImage("testing.jpg", iplimage); 
+        
         for(Game g: killer.getGames().keySet()) //Stop at first game for now
         {
-            Player dead = g.killRequest(killer, ImageFormat.convertToImage(image));
+            Player dead = g.killRequest(killer, iplimage);
             if(dead == null)
                 continue;
             
@@ -193,7 +199,9 @@ public class Server {
     public boolean addImage(int id, String image)
     {
         Player p = playerPool.getPlayer(id);
-        p.addFace(ImageFormat.convertToImage(image)); //Needs to process image
+        IplImage iplimage = ImageFormat.convertToImage(image);
+        cvSaveImage("testing.jpg", iplimage);        
+        p.addFace(iplimage); //Needs to process image
         
         return true;
     }

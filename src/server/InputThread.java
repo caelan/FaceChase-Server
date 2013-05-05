@@ -79,9 +79,9 @@ public class InputThread extends Thread {
 
     private String parseRequest(String input)
     {
-        System.out.println(">>" + input);
-        String separator = " " + Constants.itemDelim + " ";
+        String separator = " " + "\\" + Constants.itemDelim + " ";
         String regex = "(Login" + separator + ".+" + separator + ".+)|" +
+                "(Reconnect" + separator + ".+" + separator + ".+)|" +
                 "(AddUser" + separator + ".+" + separator + ".+" +  separator + ".+)|" +
                 "(RequestKill" + separator + "(\\d+ )*(\\d+))|" +
                 "(AddPicture" + separator + "(\\d+ )*(\\d+))|" +
@@ -89,15 +89,56 @@ public class InputThread extends Thread {
                 "(Quit)|" + 
                 "(Logout)";
         
-        if(input.substring(0, 11).equals("RequestKill"))
+        if(input.length() > 11 && input.substring(0, 11).equals("RequestKill"))
         {
-            String[] tokens = input.split(separator);
+            System.out.println(">>RequestKill | <image>");
+
+            /*String[] tokens = input.split(separator);
+            IplImage image = ImageFormat.convertToImage(tokens[1]);
+            cvSaveImage("testing.jpg", image);            
+            return "Success";*/
             
+            if(ioThread.getID() == null)
+                return "NotLoggedIn";
+            
+            String image = input.split(separator)[1];           
+            Pair<Player, Player> pair = server.requestKill(ioThread.getID(), image);
+            if(pair == null)
+            {
+                return "InvalidKill";
+            }
+            else
+            {
+                ioThread.writeMessageOtherThread("Dead " + pair.getFirst().getEmail(), pair.getSecond().getID());
+                return "Killed " + pair.getSecond().getEmail();
+            }
+        }
+        else if(input.length() > 10 && input.substring(0, 10).equals("AddPicture"))
+        {
+            System.out.println(">>AddPicture | <image>");
+
+            /*String[] tokens = input.split(separator);           
             IplImage image = ImageFormat.convertToImage(tokens[1]);
             cvSaveImage("testing.jpg", image);
+            return "Success";*/
             
-            return "Weeeeeeeeeeeeee";
+            if(ioThread.getID() == null)
+                return "NotLoggedIn";
+            
+            String image = input.split(separator)[1]; 
+            if(server.addImage(ioThread.getID(), image))
+                return "Success";
+            else
+                return "UnableToAddImage";
         }
+
+        if(input.length() > 100)
+        {
+            System.out.println(">><invalid input length>");
+            return null;
+        }
+        
+        System.out.println(">>" + input);
         
         if(!input.matches(regex)) {
             return null;
@@ -106,7 +147,30 @@ public class InputThread extends Thread {
         if (tokens[0].equals("Login")) 
         {
             if(ioThread.getID() != null)
-                return "AlreadyLoggedIn";
+                return "InvalidLogin";
+            
+            String email = General.formatEmail(tokens[1]);
+            if(email == null)
+                return "InvalidLogin";
+            
+            String password = tokens[2];
+            if(!General.checkPassword(password))
+                return "InvalidLogin";
+            
+            Integer id = server.login(email, password, ioThread);
+            if(id == null)
+            {
+                return "InvalidLogin";
+            }
+            else
+            {
+                return "User" + Constants.itemDelim + id;
+            }
+        }        
+        else if (tokens[0].equals("Reconnect")) 
+        {
+            if(ioThread.getID() != null)
+                return "AlreadyConnected";
             
             String email = General.formatEmail(tokens[1]);
             if(email == null)
@@ -119,13 +183,13 @@ public class InputThread extends Thread {
             Integer id = server.login(email, password, ioThread);
             if(id == null)
             {
-                return "InvalidLogin";
+                return "InvalidReconnect";
             }
             else
             {
-                return "User " + id;
+                return "User" + Constants.itemDelim + id;
             }
-        }         
+        }     
         else if (tokens[0].equals("AddUser")) 
         {
             if(ioThread.getID() != null)
@@ -153,10 +217,8 @@ public class InputThread extends Thread {
                 return "User " + id;
             }
         } 
-        else if (tokens[0].equals("RequestKill")) 
-        {
-            System.out.println("Yay!");
-                        
+        /*else if (tokens[0].equals("RequestKill")) 
+        {                        
             if(ioThread.getID() == null)
                 return "NotLoggedIn";
             
@@ -171,8 +233,8 @@ public class InputThread extends Thread {
                 ioThread.writeMessageOtherThread("Dead " + pair.getFirst().getEmail(), pair.getSecond().getID());
                 return "Killed " + pair.getSecond().getEmail();
             }
-        } 
-        else if (tokens[0].equals("AddPicture")) 
+        }*/
+        /*else if (tokens[0].equals("AddPicture")) 
         {
             if(ioThread.getID() == null)
                 return "NotLoggedIn";
@@ -183,7 +245,7 @@ public class InputThread extends Thread {
             else
                 return "UnableToAddImage";
                         
-        } 
+        }*/
         else if (tokens[0].equals("AddFriend")) 
         {
             if(ioThread.getID() == null)

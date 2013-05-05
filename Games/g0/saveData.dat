@@ -4,6 +4,6 @@ terminated false
 joinAfterCreation true
 facesPerPerson 1
 killThreshold null
-testFaces 10
+testFaces 3
 Players:
-01
+1

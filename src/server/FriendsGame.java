@@ -19,7 +19,7 @@ public class FriendsGame extends Game {
             facesPerPerson = 1;
             joinAfterCreation = true;
             killThreshold = null;
-            testFaces = 10;
+            testFaces = 3;
             if(testFaces > 0)
                 facialRec = new FacialRecognition(testFaces, saveDir, Constants.classifierType, Constants.faceSize, facesPerPerson);
             else

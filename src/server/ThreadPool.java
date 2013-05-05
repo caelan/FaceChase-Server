@@ -1,10 +1,13 @@
 package server;
 
 import java.net.Socket;
+import java.util.LinkedList;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ThreadPool {
     private ConcurrentHashMap<Integer, IOThread> connectionMap; 
+    private ConcurrentHashMap<Integer, LinkedList<String>> messageMap; 
+
     private int totalConnected;
     private Server server;
     public ThreadPool(Server server)
@@ -12,6 +15,7 @@ public class ThreadPool {
         this.server = server;
         totalConnected = 0;
         connectionMap = new ConcurrentHashMap<Integer, IOThread>();
+        messageMap = new ConcurrentHashMap<Integer, LinkedList<String>>();
     }
     
     public synchronized void addThread(Socket socket)
@@ -30,6 +34,15 @@ public class ThreadPool {
         if(connectionMap.containsKey(id))
             return false;        
         connectionMap.put(id, thread);
+        
+        if(messageMap.containsKey(id))
+        {
+            while(messageMap.get(id).size() != 0)
+            {
+                sendMessage(id, messageMap.get(id).poll());
+            }
+        }
+        
         return true;
     }
     
@@ -42,10 +55,16 @@ public class ThreadPool {
         return true;
     }
     
-    public boolean sendMessage(int id, String message) //Ideally each user will have a connection queue, but for now nope
+    public boolean sendMessage(int id, String message) //Check to make sure its valid?
     {
         if(!connectionMap.containsKey(id))
-            return false;
+        {
+            if(!messageMap.containsKey(id))
+            {
+                messageMap.put(id, new LinkedList<String>());
+            }
+            messageMap.get(id).push(message);     
+        }
         connectionMap.get(id).writeMessage(message);
         return true;
     }

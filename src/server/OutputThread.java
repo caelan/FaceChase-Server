@@ -44,8 +44,7 @@ public class OutputThread extends Thread {
                 String msgToClient = messagesToClient.poll(15, TimeUnit.SECONDS);
                 if (msgToClient != null) {
                     //processing
-                    
-                    
+                                     
                     out.println(msgToClient);
                 }                
             }

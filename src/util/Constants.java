@@ -12,8 +12,6 @@ public interface Constants {
     //public static final String eyesDetectLoadFile = System.getProperty("user.dir") + "\\haarcascades\\haarcascade_mcs_righteye.xml";
     //public static final String eyesDetectLoadFile = System.getProperty("user.dir") + "\\haarcascades\\haarcascade_eye_tree_eyeglasses.xml";
 
-    
-
     //public static final String itemDelim = "ß";
-    public static final String itemDelim = "\\|";
+    public static final String itemDelim = "|";
 }

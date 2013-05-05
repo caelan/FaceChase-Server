@@ -72,7 +72,7 @@ public class IOThread {
         return connected;
     }
     
-    public void disconnect()
+    public void disconnect() //TODO need to save messages on the queue after the user disconnects - problem how do you know which messages were from which login?
     {
         connected = false;
         if(id != null)

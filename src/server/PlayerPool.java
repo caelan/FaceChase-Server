@@ -140,7 +140,7 @@ public class PlayerPool
         {
             playerMap = new HashMap<Integer, Player>();
             usernames = new HashMap<String, Integer>();
-            
+            System.out.println(new File(saveDir + saveData).getAbsolutePath());
             Scanner scanner =  new Scanner(new File(saveDir + saveData));
             scanner.nextLine(); //PlayerPool
             

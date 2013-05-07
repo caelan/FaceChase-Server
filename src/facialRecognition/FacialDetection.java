@@ -390,12 +390,13 @@ public class FacialDetection
     public static void main(String[] args) 
     {
         FacialDetection faceDetect = new FacialDetection();
-        String filename = "facialRecTest\\miriam1.jpg";
+        String filename = "facialRecTest\\caelan1.jpg";
         IplImage img = cvLoadImage(filename); 
         //IplImage img = cvLoadImage("group.jpg"); 
         faceDetect.drawEyes(img);
         
         //faceDetect.detectEyes(img);
-        cvSaveImage("facialRecTest\\stuff.jpg", faceDetect.findRotatedFace(cvLoadImage(filename))); //Make sure not using already processed image
+        cvSaveImage("facialRecTest\\caelan1Face.jpg", faceDetect.findRotatedFace(cvLoadImage(filename))); //Make sure not using already processed image
+        cvSaveImage("facialRecTest\\caelan1FaceGray.jpg", faceDetect.preprocess(faceDetect.findRotatedFace(cvLoadImage(filename)))); //Make sure not using already processed image
     }
 }

@@ -153,16 +153,21 @@ public class FacialRecognition
     {
         //long startTime = System.nanoTime();
         
-        for(int id: labels)
+        for(int i = 0; i < labels.length; i++)
+        {
+            int id = labels[i];
             if(!ids.containsKey(id))
             {
                 ids.put(id, 1);
+              
             }
             else if(maxFacesPerPerson == null || ids.get(id) <= maxFacesPerPerson)
             {
                 ids.put(id, ids.get(id) + 1);
             }
-        
+            cvSaveImage(System.getProperty("user.dir") + "\\Processed Images\\face" + id +"_" + ids.get(id) + ".jpg", faces.getIplImage(i));
+        }
+                
         classifier.train(faces, labels);  
 
         //long trainTime = System.nanoTime();
@@ -173,15 +178,20 @@ public class FacialRecognition
     {
         //long startTime = System.nanoTime();        
         
-        for(int id: labels)
+        for(int i = 0; i < labels.length; i++)
+        {
+            int id = labels[i];
             if(!ids.containsKey(id))
             {
                 ids.put(id, 1);
+              
             }
             else if(maxFacesPerPerson == null || ids.get(id) <= maxFacesPerPerson)
             {
                 ids.put(id, ids.get(id) + 1);
             }
+            cvSaveImage(System.getProperty("user.dir") + "\\Processed Images\\face" + id +"_" + ids.get(id) + ".jpg", faces.getIplImage(i));
+        }
         
         classifier.update(faces, labels);  
         
@@ -191,10 +201,25 @@ public class FacialRecognition
     
     public IplImage extractFace(IplImage img)
     {
-        IplImage face = detect.findRotatedFace(img);
+        //IplImage face = detect.findRotatedFace(img);
+        IplImage face = detect.findFace(img);
         if(face == null)
         {
             return detect.preprocess(img, size, size);
+        }
+        else
+        {
+            return detect.preprocess(face, size, size);
+        }
+    }
+    
+    public IplImage extractFaceFail(IplImage img)
+    {
+        //IplImage face = detect.findRotatedFace(img);
+        IplImage face = detect.findFace(img);
+        if(face == null)
+        {
+            return null;
         }
         else
         {
@@ -213,6 +238,29 @@ public class FacialRecognition
         double[] confidence = new double[1];
         classifier.predict(extractFace(img), predictedLabel, confidence);
         return new Pair<Integer, Double>(predictedLabel[0], confidence[0]);
+    }
+    
+    public synchronized Pair<Integer, Double> predictConfidenceFail(IplImage img)
+    {
+        int[] predictedLabel = new int[1];
+        double[] confidence = new double[1];
+        IplImage processed = extractFaceFail(img);
+        if(processed == null)
+            return null;
+        cvSaveImage(System.getProperty("user.dir") + "\\Processed Images\\sentkill.jpg", processed); 
+        classifier.predict(processed, predictedLabel, confidence);
+        return new Pair<Integer, Double>(predictedLabel[0], confidence[0]);
+    }
+    
+    public synchronized Pair<Integer, Double> predictConfidenceThreshold(IplImage img, double threshold)
+    {
+        int[] predictedLabel = new int[1];
+        double[] confidence = new double[1];
+        classifier.predict(extractFace(img), predictedLabel, confidence);
+        if(confidence[0] < threshold) // 0.0 is the best
+            return new Pair<Integer, Double>(predictedLabel[0], confidence[0]);
+        else
+            return new Pair<Integer, Double>(null, confidence[0]);
     }
     
     public synchronized boolean save()
@@ -261,7 +309,7 @@ public class FacialRecognition
                 ids.put(Integer.parseInt(split[0]), Integer.parseInt(split[1]));
             }
             
-            classifier = createEigenFaceRecognizer();
+            createClassifier(algorithm);
             classifier.load(directory + learningData);
         }
         catch (Exception e)
@@ -299,10 +347,10 @@ public class FacialRecognition
     private static void test2()
     {
         String directory = System.getProperty("user.dir") + "\\facialRecTest";
-        FacialRecognition facialRec = new FacialRecognition(14, directory, 1, 100, 1);
+        FacialRecognition facialRec = new FacialRecognition(3, directory, 1, 100, 1);
         
-        IplImage train = cvLoadImage(directory + "\\caelan1.jpg");
-        IplImage test = cvLoadImage(directory + "\\caelan3.jpg");
+        IplImage train = cvLoadImage(directory + "\\miriam1.jpg");
+        IplImage test = cvLoadImage(directory + "\\caelan1.jpg");
         
         int label = 0;
 
@@ -311,8 +359,8 @@ public class FacialRecognition
 
         labels[0] = label;
         IplImage stuff = facialRec.extractFace(train);
-        cvSaveImage(directory + "\\caelan1Face.jpg", stuff);
-        cvSaveImage(directory + "\\caelan3Face.jpg", facialRec.extractFace(test));
+        cvSaveImage(directory + "\\miriam1Face.jpg", stuff);
+        cvSaveImage(directory + "\\caelan1Face.jpg", facialRec.extractFace(test));
         faces.put(0, stuff);
         
         facialRec.update(faces, labels);

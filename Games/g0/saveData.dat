@@ -2,8 +2,9 @@ FriendsGame 0
 active false
 terminated false
 joinAfterCreation true
-facesPerPerson 1
+facesPerPerson 3
 killThreshold null
 testFaces 3
 Players:
+0
 1

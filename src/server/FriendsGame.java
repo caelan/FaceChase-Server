@@ -16,7 +16,7 @@ public class FriendsGame extends Game {
         }
         else
         {
-            facesPerPerson = 1;
+            facesPerPerson = 3;
             joinAfterCreation = true;
             killThreshold = null;
             testFaces = 3;
@@ -37,7 +37,10 @@ public class FriendsGame extends Game {
     
     public Player killRequest(Player killer, IplImage image)
     {
-        Pair<Integer, Double> results = facialRec.predictConfidence(image);
+        Pair<Integer, Double> results = facialRec.predictConfidenceFail(image);
+        if(results == null)
+            return null;
+        System.out.println(results);
         if(killThreshold == null || results.getSecond() >= killThreshold)
         {
             int id = results.getFirst();
@@ -49,6 +52,7 @@ public class FriendsGame extends Game {
             if(!killer.getFriends().contains(id))
                 return null;
 
+            
             if(!playerStatus.containsKey(killer))//Don't actually need
                 return null;            
             Status s1 = playerStatus.get(killer);
@@ -57,7 +61,7 @@ public class FriendsGame extends Game {
                 return null;
             
             Status s2 = playerStatus.get(dead);
-            
+                        
             if(!s1.alive() || !s2.alive())
                 return null;
 

@@ -41,33 +41,64 @@ public class FacialDetection
     
     public IplImage preprocess(IplImage img)
     {
-        IplImage grayImg = IplImage.create(img.width(), img.height(), IPL_DEPTH_8U, 1); 
-        cvCvtColor(img, grayImg, CV_BGR2GRAY); 
-        IplImage equImg = IplImage.create(grayImg.width(), grayImg.height(), IPL_DEPTH_8U, 1); 
-        cvEqualizeHist(grayImg, equImg); 
-        return equImg;
+        if(img.nChannels() != 1)
+        {
+            IplImage grayImg = IplImage.create(img.width(), img.height(), IPL_DEPTH_8U, 1); 
+            cvCvtColor(img, grayImg, CV_BGR2GRAY); 
+            IplImage equImg = IplImage.create(grayImg.width(), grayImg.height(), IPL_DEPTH_8U, 1); 
+            cvEqualizeHist(grayImg, equImg); 
+            return equImg;
+        }
+        else
+        {
+            IplImage equImg = IplImage.create(img.width(), img.height(), IPL_DEPTH_8U, 1); 
+            cvEqualizeHist(img, equImg); 
+            return equImg;
+        }
     }
 
     public IplImage preprocess(IplImage img, int scale)
     {
-        IplImage grayImg = IplImage.create(img.width(), img.height(), IPL_DEPTH_8U, 1); 
-        cvCvtColor(img, grayImg, CV_BGR2GRAY); 
-        IplImage smallImg = IplImage.create(grayImg.width()/scale, grayImg.height()/scale, IPL_DEPTH_8U, 1); 
-        cvResize(grayImg, smallImg, CV_INTER_LINEAR); 
-        IplImage equImg = IplImage.create(smallImg.width(), smallImg.height(), IPL_DEPTH_8U, 1); 
-        cvEqualizeHist(smallImg, equImg); 
-        return equImg;
+        if(img.nChannels() != 1)
+        {
+            IplImage grayImg = IplImage.create(img.width(), img.height(), IPL_DEPTH_8U, 1); 
+            cvCvtColor(img, grayImg, CV_BGR2GRAY); 
+            IplImage smallImg = IplImage.create(grayImg.width()/scale, grayImg.height()/scale, IPL_DEPTH_8U, 1); 
+            cvResize(grayImg, smallImg, CV_INTER_LINEAR); 
+            IplImage equImg = IplImage.create(smallImg.width(), smallImg.height(), IPL_DEPTH_8U, 1); 
+            cvEqualizeHist(smallImg, equImg); 
+            return equImg;
+        }
+        else
+        {
+            IplImage smallImg = IplImage.create(img.width()/scale, img.height()/scale, IPL_DEPTH_8U, 1); 
+            cvResize(img, smallImg, CV_INTER_LINEAR); 
+            IplImage equImg = IplImage.create(smallImg.width(), smallImg.height(), IPL_DEPTH_8U, 1); 
+            cvEqualizeHist(smallImg, equImg); 
+            return equImg;
+        }        
     }
 
     public IplImage preprocess(IplImage img, int width, int height)
     {
-        IplImage grayImg = IplImage.create(img.width(), img.height(), IPL_DEPTH_8U, 1); 
-        cvCvtColor(img, grayImg, CV_BGR2GRAY); 
-        IplImage smallImg = IplImage.create(width, height, IPL_DEPTH_8U, 1); 
-        cvResize(grayImg, smallImg, CV_INTER_LINEAR); 
-        IplImage equImg = IplImage.create(smallImg.width(), smallImg.height(), IPL_DEPTH_8U, 1); 
-        cvEqualizeHist(smallImg, equImg); 
-        return equImg;
+        if(img.nChannels() != 1)
+        {
+            IplImage grayImg = IplImage.create(img.width(), img.height(), IPL_DEPTH_8U, 1); 
+            cvCvtColor(img, grayImg, CV_BGR2GRAY); 
+            IplImage smallImg = IplImage.create(width, height, IPL_DEPTH_8U, 1); 
+            cvResize(grayImg, smallImg, CV_INTER_LINEAR); 
+            IplImage equImg = IplImage.create(smallImg.width(), smallImg.height(), IPL_DEPTH_8U, 1); 
+            cvEqualizeHist(smallImg, equImg); 
+            return equImg;
+        }
+        else
+        {
+            IplImage smallImg = IplImage.create(width, height, IPL_DEPTH_8U, 1); 
+            cvResize(img, smallImg, CV_INTER_LINEAR); 
+            IplImage equImg = IplImage.create(smallImg.width(), smallImg.height(), IPL_DEPTH_8U, 1); 
+            cvEqualizeHist(smallImg, equImg); 
+            return equImg;
+        }    
     }   
     
     /*public IplImage findFace(IplImage img)
@@ -112,10 +143,12 @@ public class FacialDetection
             CvRect rect = faces.position(0);
             int size = Math.max(rect.width(), rect.height());
             if(size < 30)
+            {
                 return null;
+            }
             
             cvSetImageROI(img, rect);
-            IplImage cropped = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
+            IplImage cropped = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, img.nChannels());
             cvCopy(img, cropped, null);
             cvResetImageROI(img);
                        
@@ -357,12 +390,12 @@ public class FacialDetection
     public static void main(String[] args) 
     {
         FacialDetection faceDetect = new FacialDetection();
-        String filename = "facialRecTest\\chorallaries.jpg";
+        String filename = "facialRecTest\\miriam1.jpg";
         IplImage img = cvLoadImage(filename); 
         //IplImage img = cvLoadImage("group.jpg"); 
         faceDetect.drawEyes(img);
         
         //faceDetect.detectEyes(img);
-        cvSaveImage("facialRecTest\\face.jpg", faceDetect.findRotatedFace(cvLoadImage(filename))); //Make sure not using already processed image
+        cvSaveImage("facialRecTest\\stuff.jpg", faceDetect.findRotatedFace(cvLoadImage(filename))); //Make sure not using already processed image
     }
 }

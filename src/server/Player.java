@@ -52,7 +52,6 @@ public class Player
     {
         this.id = id;
         //this.username = username;
-        //this.name = name;
         this.email = email;
         this.password = General.hashPassword(password);
         this.name = name;
@@ -71,12 +70,14 @@ public class Player
         //TODO load images for the game
     }
     
-    public void addFace(IplImage i) //TODO save faces that were matches for better data later
+    public boolean addFace(IplImage i)
     {
+        boolean b = false;
         for(Game g: gameStatus.keySet())
-            g.updateRecognition(i, id);
+            b = b || g.updateRecognition(i, id);
         
         facesToBeSaved.add(i);
+        return b;
     }
     
     public synchronized void addFriend(Player p)
@@ -86,14 +87,7 @@ public class Player
     }
     
     public boolean save()
-    {
-        for(IplImage face: facesToBeSaved)
-        {
-            faceCount++;
-            cvSaveImage(saveDir + "\\f" + faceCount + ".jpg", face);
-            cvReleaseImage(face);
-        }
-        
+    {       
         File saveDirFile = new File(saveDir);
         /*if(saveDirFile.exists())
         {
@@ -105,6 +99,13 @@ public class Player
         }*/
 
         saveDirFile.mkdirs();
+        
+        for(IplImage face: facesToBeSaved)
+        {
+            faceCount++;
+            cvSaveImage(saveDir + "\\f" + faceCount + ".jpg", face);
+            cvReleaseImage(face);
+        }
 
         try{            
             FileWriter fstream = new FileWriter(saveDir + saveData);
@@ -112,7 +113,7 @@ public class Player
             out.write(toString() + "\n");
             out.write("id " + id + "\n");
             out.write("email " + email + "\n");
-            out.write("password " + password + "\n"); //TODO hash this
+            out.write("password " + password + "\n");
             out.write("name " + name + "\n");
             out.write("faceCount " + faceCount + "\n");
             
@@ -159,6 +160,8 @@ public class Player
                 int gameID = Integer.parseInt(line);
                 gameStatus.put(gameID, null);
             }*/
+            
+            scanner.nextLine();
             
             while (scanner.hasNextLine())
             {
@@ -212,5 +215,9 @@ public class Player
 
     public String getEmail() {
         return email;
+    }
+    
+    public String getName() {
+        return name;
     }
 }

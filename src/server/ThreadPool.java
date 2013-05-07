@@ -57,7 +57,7 @@ public class ThreadPool {
     
     public boolean sendMessage(int id, String message) //Check to make sure its valid?
     {
-        if(!connectionMap.containsKey(id))
+        if(!connectionMap.containsKey(id) || connectionMap.get(id) == null)
         {
             if(!messageMap.containsKey(id))
             {
@@ -65,7 +65,10 @@ public class ThreadPool {
             }
             messageMap.get(id).push(message);     
         }
-        connectionMap.get(id).writeMessage(message);
+        else
+        {
+            connectionMap.get(id).writeMessage(message);
+        }
         return true;
     }
 }

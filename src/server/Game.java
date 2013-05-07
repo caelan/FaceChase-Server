@@ -54,13 +54,16 @@ public abstract class Game {
     public abstract boolean typeSpecificSave();
     public abstract boolean typeSpecificLoad();
 
-    public void updateRecognition(IplImage image, int label)
+    public boolean updateRecognition(IplImage image, int label)
     {
         final MatVector faces = new MatVector(1);
         final int[] labels = new int[1];
 
         labels[0] = label;
-        faces.put(0, image);
+        IplImage processed = facialRec.extractFaceFail(image);
+        if(processed == null)
+            return false;
+        faces.put(0, processed);
         
         Runnable thread = new Runnable(){ //TODO likely better to spawn a thread for this one...
             public void run(){
@@ -68,6 +71,8 @@ public abstract class Game {
                 }
         };
         new Thread(thread).start();
+        
+        return true;
     }   
     
     public boolean save()
@@ -103,7 +108,7 @@ public abstract class Game {
                 
             out.write("Players:\n");
             for(Player p: playerStatus.keySet())
-                out.write("" + p.getID());
+                out.write("" + p.getID() + "\n");
 
             out.close();
         }
@@ -152,7 +157,6 @@ public abstract class Game {
             scanner.close();
             
             facialRec = new FacialRecognition(saveDir);
-            facialRec.load();
         }
         catch (Exception e)
         {

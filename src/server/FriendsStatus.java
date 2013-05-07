@@ -9,8 +9,9 @@ import util.General;
 public class FriendsStatus extends Status
 {
     private Long lastKilled;
-    private final double deathTime = General.minToMilli(3); //In milliseconds
-    
+    //private final double deathTime = General.minToMilli(3); //In milliseconds
+    private final Double deathTime = null; 
+
     public FriendsStatus(Game g, Player p)
     {
         super(g, p);
@@ -53,7 +54,7 @@ public class FriendsStatus extends Status
     
     public boolean alive()
     {
-        if(lastKilled == null || General.nanoToMilli(System.nanoTime() - lastKilled) >= deathTime)
+        if(lastKilled == null || deathTime == null || General.nanoToMilli(System.nanoTime() - lastKilled) >= deathTime)
         {
             lastKilled = null;
             return true;

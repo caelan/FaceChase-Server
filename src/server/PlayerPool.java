@@ -92,7 +92,7 @@ public class PlayerPool
         }
     }
     
-    public synchronized boolean save()
+    public synchronized boolean save() //TODO don't save when you are in the folder (file explorer)
     {
         File saveDirFile = new File(saveDir);
         if(saveDirFile.exists())
@@ -101,7 +101,6 @@ public class PlayerPool
                 FileSystem.delete(saveDirFile);
             } catch (IOException e) {
                 System.err.println("Could Not Save PlayerPool: " + e.getMessage());
-                return false;
             }
         }
         
@@ -122,7 +121,6 @@ public class PlayerPool
         catch (Exception e)
         {
             System.err.println("Could Not Save PlayerPool: " + e.getMessage());
-            return false;
         }
                 
         for(int id: playerMap.keySet())
@@ -131,7 +129,6 @@ public class PlayerPool
             if(!p.save())
             {
                 System.err.println("Could Not Save PlayerPool: Error Saving Players");
-                return false; 
             }
         }
         return true;

@@ -124,6 +124,11 @@ public class Server {
         gamePool.addFriendsGame();
     }
     
+    public Player getPlayer(int id)
+    {
+        return playerPool.getPlayer(id);
+    }
+    
     public void addPlayerToGame(Player p, Game g)
     {
         Status s = g.addPlayer(p);
@@ -135,7 +140,6 @@ public class Server {
         Player p = playerPool.addPlayer(email, password, name);
         if(p == null)
         {
-            System.out.println("Add Failed");
             return null;
         }
         
@@ -144,34 +148,29 @@ public class Server {
         Integer id = p.getID();
         if(thread.registerThread(id))
         {
-            System.out.println("Added " + p);
             return id;
         }
         else
         {
-            System.out.println("Add Failed");
             return null;
         }        
     }
     
-    public Integer login(String email, String password, IOThread thread)
+    public Player login(String email, String password, IOThread thread)
     {
         Player p = playerPool.login(email, password);
         if(p == null)
         {
-            System.out.println("Login Failed");
             return null;
         }
 
         Integer id = p.getID();
         if(thread.registerThread(id))
         {
-            System.out.println("Login " + p);
-            return id;
+            return p;
         }
         else
         {
-            System.out.println("Login Failed");
             return null;
         }
     }
@@ -181,7 +180,6 @@ public class Server {
         Player killer = playerPool.getPlayer(killerID);
  
         IplImage iplimage = ImageFormat.convertToImage(image);
-        cvSaveImage("testing.jpg", iplimage); 
         
         for(Game g: killer.getGames().keySet()) //Stop at first game for now
         {
@@ -201,9 +199,7 @@ public class Server {
         Player p = playerPool.getPlayer(id);
         IplImage iplimage = ImageFormat.convertToImage(image);
         cvSaveImage("testing.jpg", iplimage);        
-        p.addFace(iplimage); //Needs to process image
-        
-        return true;
+        return p.addFace(iplimage);       
     }
     
     public boolean addFriend(int id, String name) //TODO 
